@@ -17,9 +17,9 @@ use rend3::{
 use serde::Serialize;
 use wgpu::{
     BindGroup, BindGroupLayout, ColorTargetState, ColorWrites, CompareFunction, DepthBiasState, DepthStencilState,
-    FragmentState, IndexFormat, MultisampleState, PipelineLayoutDescriptor, PolygonMode, PrimitiveState,
-    PrimitiveTopology, RenderPipeline, RenderPipelineDescriptor, ShaderModule, StencilState, TextureFormat,
-    VertexState, PipelineCompilationOptions,
+    FragmentState, IndexFormat, MultisampleState, PipelineCompilationOptions, PipelineLayoutDescriptor, PolygonMode,
+    PrimitiveState, PrimitiveTopology, RenderPipeline, RenderPipelineDescriptor, ShaderModule, StencilState,
+    TextureFormat, VertexState,
 };
 
 use crate::common::{CameraSpecifier, PerMaterialArchetypeInterface, WholeFrameInterfaces};
@@ -348,8 +348,11 @@ fn build_forward_pipeline_inner<M: Material>(
     let mut desc = RenderPipelineDescriptor {
         label: Some(args.name),
         layout: Some(pll),
-        vertex: VertexState { module: args.shaders.vs_module, entry_point: args.shaders.vs_entry, buffers: &[],
-            compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
+        vertex: VertexState {
+            module: args.shaders.vs_module,
+            entry_point: args.shaders.vs_entry,
+            buffers: &[],
+            compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
         },
         primitive: PrimitiveState {
             topology: PrimitiveTopology::TriangleList,
@@ -379,7 +382,7 @@ fn build_forward_pipeline_inner<M: Material>(
             module: args.shaders.fs_module,
             entry_point: args.shaders.fs_entry,
             targets: &[],
-            compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
+            compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
         }),
         multiview: None,
     };

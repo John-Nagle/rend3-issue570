@@ -3,8 +3,8 @@ use std::num::NonZeroU64;
 use encase::{private::WriteInto, ShaderSize};
 use wgpu::{
     BindGroupLayout, BindingType, Buffer, BufferBindingType, BufferDescriptor, BufferUsages, CommandEncoder,
-    ComputePassDescriptor, ComputePipeline, ComputePipelineDescriptor, Device, PipelineLayoutDescriptor, ShaderStages,
-    PipelineCompilationOptions,
+    ComputePassDescriptor, ComputePipeline, ComputePipelineDescriptor, Device, PipelineCompilationOptions,
+    PipelineLayoutDescriptor, ShaderStages,
 };
 
 use crate::util::{
@@ -62,7 +62,7 @@ impl ScatterCopy {
             layout: Some(&pll),
             module: &sm,
             entry_point: "cs_main",
-            compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
+            compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
         });
 
         Self { pipeline, bgl }

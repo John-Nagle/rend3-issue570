@@ -7,11 +7,10 @@ use thiserror::Error;
 use wgpu::{
     AddressMode, BindGroup, BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, Color,
     ColorTargetState, ColorWrites, CommandEncoder, Device, FilterMode, FragmentState, FrontFace, LoadOp,
-    MultisampleState, Operations, PipelineLayout, PipelineLayoutDescriptor, PolygonMode, PrimitiveState,
-    PrimitiveTopology, RenderPassColorAttachment, RenderPassDescriptor, RenderPipeline, RenderPipelineDescriptor,
-    SamplerBindingType, SamplerDescriptor, ShaderModule, ShaderStages, StoreOp, Texture, TextureDescriptor,
-    TextureSampleType, TextureViewDescriptor, TextureViewDimension, VertexState,
-    PipelineCompilationOptions,
+    MultisampleState, Operations, PipelineCompilationOptions, PipelineLayout, PipelineLayoutDescriptor, PolygonMode,
+    PrimitiveState, PrimitiveTopology, RenderPassColorAttachment, RenderPassDescriptor, RenderPipeline,
+    RenderPipelineDescriptor, SamplerBindingType, SamplerDescriptor, ShaderModule, ShaderStages, StoreOp, Texture,
+    TextureDescriptor, TextureSampleType, TextureViewDescriptor, TextureViewDimension, VertexState,
 };
 
 use crate::{
@@ -116,11 +115,11 @@ impl MipmapGenerator {
         device.create_render_pipeline(&RenderPipelineDescriptor {
             label: Some(&label),
             layout: Some(pll),
-            vertex: VertexState { 
-                module: sm, 
-                entry_point: "vs_main", 
+            vertex: VertexState {
+                module: sm,
+                entry_point: "vs_main",
                 buffers: &[],
-                compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
+                compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
             },
             primitive: PrimitiveState {
                 topology: PrimitiveTopology::TriangleList,
@@ -137,7 +136,7 @@ impl MipmapGenerator {
                 module: sm,
                 entry_point: "fs_main",
                 targets: &[Some(ColorTargetState { format, blend: None, write_mask: ColorWrites::all() })],
-                compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
+                compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
             }),
             multiview: None,
         })
