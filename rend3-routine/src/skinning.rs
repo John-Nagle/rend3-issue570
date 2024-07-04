@@ -17,6 +17,7 @@ use rend3::{
 use wgpu::{
     BindGroupLayout, Buffer, BufferBindingType, BufferDescriptor, BufferUsages, CommandEncoder, ComputePassDescriptor,
     ComputePipeline, ComputePipelineDescriptor, PipelineLayoutDescriptor, ShaderModuleDescriptor, ShaderStages,
+    PipelineCompilationOptions,
 };
 
 /// The per-skeleton data, as uploaded to the GPU compute shader.
@@ -173,6 +174,7 @@ impl GpuSkinner {
             layout: Some(&layout),
             module: &module,
             entry_point: "main",
+            compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
         });
 
         Self { bgl, pipeline }

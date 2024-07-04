@@ -21,7 +21,7 @@ use wgpu::{
     BindGroup, BindGroupLayout, BindingType, ColorTargetState, ColorWrites, Device, FragmentState, FrontFace,
     MultisampleState, PipelineLayoutDescriptor, PolygonMode, PrimitiveState, PrimitiveTopology, RenderPipeline,
     RenderPipelineDescriptor, ShaderModuleDescriptor, ShaderSource, ShaderStages, TextureFormat, TextureSampleType,
-    TextureViewDimension, VertexState,
+    TextureViewDimension, VertexState, PipelineCompilationOptions,
 };
 
 use crate::common::WholeFrameInterfaces;
@@ -52,7 +52,9 @@ fn create_pipeline(
     device.create_render_pipeline(&RenderPipelineDescriptor {
         label: Some("tonemapping pass"),
         layout: Some(&pll),
-        vertex: VertexState { module: &module, entry_point: "vs_main", buffers: &[] },
+        vertex: VertexState { module: &module, entry_point: "vs_main", buffers: &[],
+            compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
+        },
         primitive: PrimitiveState {
             topology: PrimitiveTopology::TriangleList,
             strip_index_format: None,
@@ -68,6 +70,7 @@ fn create_pipeline(
             module: &module,
             entry_point: fs_entry_point,
             targets: &[Some(ColorTargetState { format: output_format, blend: None, write_mask: ColorWrites::all() })],
+            compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
         }),
         multiview: None,
     })

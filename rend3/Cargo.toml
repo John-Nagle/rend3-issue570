@@ -1,6 +1,6 @@
 [package]
 name = "rend3"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["The rend3 Developers"]
 edition = "2021"
 description = "Easy to use, customizable, efficient 3D renderer library built on wgpu."
@@ -58,8 +58,8 @@ serde = { version = "1", features = ["derive"] }
 smallvec = "1"
 smartstring = "1.0"
 thiserror = "1"
-wgpu = "0.19.0"
-wgpu-profiler = "0.16.0"
+wgpu = "0.20"
+wgpu-profiler = "0.17"
 
 [dev-dependencies]
 pollster = "0.3"

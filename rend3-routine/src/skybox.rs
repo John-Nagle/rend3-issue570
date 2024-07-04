@@ -13,6 +13,7 @@ use wgpu::{
     DepthStencilState, Face, FragmentState, FrontFace, MultisampleState, PipelineLayoutDescriptor, PolygonMode,
     PrimitiveState, PrimitiveTopology, RenderPipeline, RenderPipelineDescriptor, ShaderModuleDescriptor, ShaderSource,
     ShaderStages, StencilState, TextureFormat, TextureSampleType, TextureViewDimension, VertexState,
+    PipelineCompilationOptions,
 };
 
 use crate::common::WholeFrameInterfaces;
@@ -140,7 +141,9 @@ impl SkyboxPipelines {
             renderer.device.create_render_pipeline(&RenderPipelineDescriptor {
                 label: Some("skybox pass"),
                 layout: Some(&pll),
-                vertex: VertexState { module: &skybox_sm, entry_point: "vs_main", buffers: &[] },
+                vertex: VertexState { module: &skybox_sm, entry_point: "vs_main", buffers: &[],
+                    compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
+                },
                 primitive: PrimitiveState {
                     topology: PrimitiveTopology::TriangleList,
                     strip_index_format: None,
@@ -166,6 +169,7 @@ impl SkyboxPipelines {
                         blend: None,
                         write_mask: ColorWrites::all(),
                     })],
+                    compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
                 }),
                 multiview: None,
             })

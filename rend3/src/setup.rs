@@ -96,6 +96,10 @@ pub const GPU_REQUIRED_LIMITS: Limits = Limits {
     max_compute_workgroups_per_dimension: 65535,
     max_buffer_size: 8192 * 8 * 18,
     max_non_sampler_bindings: 1_000_000,
+    max_color_attachment_bytes_per_sample: 32, // From WGPU 0.20 (JN)
+    max_color_attachments: 8,
+    min_subgroup_size: 0,
+    max_subgroup_size: 0,
 };
 
 /// Limits required to run in the CpuDriven profile.
@@ -130,6 +134,10 @@ pub const CPU_REQUIRED_LIMITS: Limits = Limits {
     max_compute_workgroups_per_dimension: 65535,
     max_buffer_size: 8192 * 8 * 8,
     max_non_sampler_bindings: 1_000_000,
+    max_color_attachment_bytes_per_sample: 32, // From WGPU 0.20 (JN)
+    max_color_attachments: 8,
+    min_subgroup_size: 0,
+    max_subgroup_size: 0,
 };
 
 fn check_limit_unlimited<LimitValue: Into<u64> + Ord>(
@@ -311,6 +319,27 @@ pub fn check_limits(profile: RendererProfile, device_limits: &Limits) -> Result<
             LimitType::MaxBufferSize,
         )?,
         max_non_sampler_bindings: 1_000_000,
+        //  New in WGPU 0.20 (JN)
+        max_color_attachment_bytes_per_sample: check_limit_unlimited(
+            device_limits.max_color_attachment_bytes_per_sample,
+            required_limits.max_color_attachment_bytes_per_sample,
+            LimitType::MaxColorAttachmentBytesPerSample,
+        )?,
+        max_color_attachments: check_limit_unlimited(
+            device_limits.max_color_attachments,
+            required_limits.max_color_attachments,
+            LimitType::MaxColorAttachments,
+        )?,
+        max_subgroup_size: check_limit_unlimited(
+            device_limits.max_subgroup_size,
+            required_limits.max_subgroup_size,
+            LimitType::MaxSubgroupSize,
+        )?,
+        min_subgroup_size: check_limit_unlimited(
+            device_limits.min_subgroup_size,
+            required_limits.min_subgroup_size,
+            LimitType::MinSubgroupSize,
+        )?,
     })
 }
 

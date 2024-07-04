@@ -11,6 +11,7 @@ use wgpu::{
     PrimitiveTopology, RenderPassColorAttachment, RenderPassDescriptor, RenderPipeline, RenderPipelineDescriptor,
     SamplerBindingType, SamplerDescriptor, ShaderModule, ShaderStages, StoreOp, Texture, TextureDescriptor,
     TextureSampleType, TextureViewDescriptor, TextureViewDimension, VertexState,
+    PipelineCompilationOptions,
 };
 
 use crate::{
@@ -115,7 +116,12 @@ impl MipmapGenerator {
         device.create_render_pipeline(&RenderPipelineDescriptor {
             label: Some(&label),
             layout: Some(pll),
-            vertex: VertexState { module: sm, entry_point: "vs_main", buffers: &[] },
+            vertex: VertexState { 
+                module: sm, 
+                entry_point: "vs_main", 
+                buffers: &[],
+                compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
+            },
             primitive: PrimitiveState {
                 topology: PrimitiveTopology::TriangleList,
                 strip_index_format: None,
@@ -131,6 +137,7 @@ impl MipmapGenerator {
                 module: sm,
                 entry_point: "fs_main",
                 targets: &[Some(ColorTargetState { format, blend: None, write_mask: ColorWrites::all() })],
+                compilation_options: PipelineCompilationOptions::default(),    // use default WGPU options. New in WGPU 0.20 (JN)
             }),
             multiview: None,
         })
