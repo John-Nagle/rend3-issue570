@@ -1,6 +1,6 @@
 [package]
 name = "rend3-test"
-version = "0.3.0"
+version = "0.20.0"
 authors = ["The rend3 Developers"]
 edition = "2021"
 description = "Testing utilities for rend3."
