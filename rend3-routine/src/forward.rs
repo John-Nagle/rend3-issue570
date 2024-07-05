@@ -25,6 +25,8 @@ use wgpu::{
 use crate::common::{CameraSpecifier, PerMaterialArchetypeInterface, WholeFrameInterfaces};
 use crate::uniforms::PerCameraUniform;
 
+/// This structure is unused.
+#[allow(dead_code)]  // This structure is never constructed
 #[derive(Serialize)]
 struct ForwardPreprocessingArguments {
     profile: Option<RendererProfile>,
