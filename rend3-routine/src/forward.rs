@@ -26,7 +26,7 @@ use crate::common::{CameraSpecifier, PerMaterialArchetypeInterface, WholeFrameIn
 use crate::uniforms::PerCameraUniform;
 
 /// This structure is unused.
-#[allow(dead_code)]  // This structure is never constructed
+#[allow(dead_code)] // This structure is never constructed
 #[derive(Serialize)]
 struct ForwardPreprocessingArguments {
     profile: Option<RendererProfile>,
