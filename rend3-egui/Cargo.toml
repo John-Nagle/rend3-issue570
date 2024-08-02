@@ -1,6 +1,6 @@
 [package]
 name = "rend3-egui"
-version = "0.22.0"
+version = "0.22.1"
 authors = ["The rend3 Developers"]
 edition = "2021"
 description = "Egui Render Routine for the rend3 rendering library."
@@ -15,6 +15,6 @@ rust-version = "1.71"
 egui = "0.28"
 egui-wgpu = "0.28"
 glam = "0.25"
-rend3 = { version = "^0.22", path = "../rend3" }
-wgpu = "22.0"
+rend3 = { version = "^0.22.1", path = "../rend3" }
+wgpu = "22.1"
 wgpu-types = "22.0"

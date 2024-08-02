@@ -547,6 +547,7 @@ pub async fn create_iad(
                         label: None,
                         required_features: adapter.features.union(additional_features.unwrap_or_else(Features::empty)),
                         required_limits: adapter.limits,
+                        memory_hints: Default::default(), // Use default for memory hints for now. Possible future optimization.
                     },
                     None,
                 )
