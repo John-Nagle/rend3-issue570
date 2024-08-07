@@ -113,7 +113,9 @@ impl ScatterCopy {
             mapped_slice[range_start] = item.word_offset;
             let mut writer = encase::internal::Writer::new(
                 &item.data,
-                bytemuck::cast_slice_mut(&mut mapped_slice[range_start + 1..range_end]),
+                //////bytemuck::cast_slice_mut(&mut mapped_slice[range_start + 1..range_end]),
+                bytemuck::cast_slice_mut::<_, u8>(&mut mapped_slice[range_start + 1..range_end]),
+                ////bytemuck::cast_slice_mut::<_, encase::internal::BufferMut>(&mut mapped_slice[range_start + 1..range_end]),
                 0,
             )
             .unwrap();

@@ -76,6 +76,7 @@ fn create_pipeline(
             compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
         }),
         multiview: None,
+        cache: None,    // (JN) no cache used
     })
 }
 

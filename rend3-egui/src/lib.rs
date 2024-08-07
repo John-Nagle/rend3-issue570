@@ -32,7 +32,8 @@ impl EguiRenderRoutine {
         height: u32,
         scale_factor: f32,
     ) -> Self {
-        let rpass = egui_wgpu::Renderer::new(&renderer.device, surface_format, None, samples as _);
+        const DITHERING: bool = false;  // new EGUI feature.
+        let rpass = egui_wgpu::Renderer::new(&renderer.device, surface_format, None, samples as _, DITHERING);
 
         Self {
             internal: rpass,

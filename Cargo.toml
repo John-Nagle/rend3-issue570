@@ -26,3 +26,10 @@ opt-level = 3
 [profile.release]
 debug = true
 lto = "thin"
+
+#   Override egui - doesn't work.
+[patch.crates-io]
+egui = { git = "https://github.com/emilk/egui", branch = "master"}
+egui-wgpu = { git = "https://github.com/emilk/egui", branch = "master"}
+epaint = { git = "https://github.com/emilk/egui", branch = "master"}
+## wgpu = { version = "22.1" }

@@ -175,6 +175,7 @@ impl GpuSkinner {
             module: &module,
             entry_point: "main",
             compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
+            cache: None,    // (JN) no cache used
         });
 
         Self { bgl, pipeline }

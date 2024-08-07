@@ -26,7 +26,7 @@ egui-winit = { version = "0.28", default-features = false, features = ["links", 
 # logging
 env_logger = { version = "0.11", default-features = false, features = ["auto-color", "humantime"] }
 # Linear algebra library
-glam = "0.25"
+glam = "0.28"
 # gltf model loading
 gltf = "1.4"
 # Channel
@@ -68,7 +68,7 @@ winit = "0.29.4"
 # Integration with wgpu
 wgpu = "22.1"
 # Profiling with wgpu
-wgpu-profiler = "0.17"
+wgpu-profiler = "0.18"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_log = "1"

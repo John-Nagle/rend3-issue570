@@ -387,6 +387,7 @@ fn build_forward_pipeline_inner<M: Material>(
             compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
         }),
         multiview: None,
+        cache: None,    // (JN) no cache used
     };
     if let Some(desc_callback) = args.descriptor_callback {
         desc_callback(&mut desc, &mut render_targets);

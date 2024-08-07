@@ -14,7 +14,7 @@ rust-version = "1.71"
 [dependencies]
 egui = "0.28"
 egui-wgpu = "0.28"
-glam = "0.25"
+glam = "0.28"
 rend3 = { version = "^0.22.1", path = "../rend3" }
 wgpu = "22.1"
 wgpu-types = "22.0"
