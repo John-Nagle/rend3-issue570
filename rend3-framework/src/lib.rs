@@ -12,7 +12,7 @@ use wgpu::{Instance, PresentMode, SurfaceError};
 use winit::{
     error::EventLoopError,
     event::Event,
-    event_loop::{ControlFlow, EventLoop, EventLoopBuilder, ActiveEventLoop},
+    event_loop::{ControlFlow, EventLoop, ActiveEventLoop},
     window::{Window, WindowAttributes},
 };
 

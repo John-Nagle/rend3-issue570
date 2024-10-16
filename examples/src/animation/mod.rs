@@ -161,7 +161,7 @@ pub fn main() {
     let app = AnimationExample::default();
     rend3_framework::start(
         app,
-        winit::window::WindowBuilder::new().with_title("animation-example").with_maximized(true),
+        winit::window::WindowAttributes::default().with_title("animation-example").with_maximized(true),
     );
 }
 

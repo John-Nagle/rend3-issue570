@@ -256,7 +256,7 @@ impl rend3_framework::App for EguiExample {
 
 pub fn main() {
     let app = EguiExample::default();
-    rend3_framework::start(app, winit::window::WindowBuilder::new().with_title("egui").with_maximized(true))
+    rend3_framework::start(app, winit::window::WindowAttributes::default().with_title("egui").with_maximized(true))
 }
 
 fn vertex(pos: [f32; 3]) -> glam::Vec3 {

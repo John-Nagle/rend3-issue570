@@ -172,7 +172,7 @@ impl rend3_framework::App for TexturedQuadExample {
 
 pub fn main() {
     let app = TexturedQuadExample::default();
-    rend3_framework::start(app, winit::window::WindowBuilder::new().with_title("textured-quad").with_maximized(true))
+    rend3_framework::start(app, winit::window::WindowAttributes::default().with_title("textured-quad").with_maximized(true))
 }
 
 #[cfg(test)]

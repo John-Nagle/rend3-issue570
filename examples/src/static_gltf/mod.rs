@@ -142,7 +142,7 @@ impl rend3_framework::App for StaticGltfExample {
 
 pub fn main() {
     let app = StaticGltfExample::default();
-    rend3_framework::start(app, winit::window::WindowBuilder::new().with_title("gltf-example").with_maximized(true));
+    rend3_framework::start(app, winit::window::WindowAttributes::default().with_title("gltf-example").with_maximized(true));
 }
 
 #[cfg(test)]

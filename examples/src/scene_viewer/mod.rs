@@ -20,7 +20,7 @@ use web_time::Instant;
 use winit::{
     event::{DeviceEvent, ElementState, Event, KeyEvent, MouseButton, WindowEvent},
     keyboard::{KeyCode, PhysicalKey},
-    window::{Fullscreen, WindowBuilder},
+    window::{Fullscreen},
 };
 
 async fn load_skybox_image(loader: &rend3_framework::AssetLoader, data: &mut Vec<u8>, path: &str) {
@@ -698,7 +698,7 @@ impl rend3_framework::App for SceneViewer {
 pub fn main() {
     let app = SceneViewer::from_args();
 
-    let mut builder = WindowBuilder::new().with_title("scene-viewer").with_maximized(true);
+    let mut builder = winit::window::WindowAttributes::default().with_title("scene-viewer").with_maximized(true);
     if app.fullscreen {
         builder = builder.with_fullscreen(Some(Fullscreen::Borderless(None)));
     }
