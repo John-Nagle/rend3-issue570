@@ -90,7 +90,7 @@ impl EguiRenderRoutine {
             );
             drop(cmd_buffer);
 
-            self.internal.render(rpass, input.clipped_meshes, &self.screen_descriptor);
+            //////// ***TEMP TURNOFF*** self.internal.render(rpass, input.clipped_meshes, &self.screen_descriptor);
         });
     }
 

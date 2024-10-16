@@ -115,6 +115,10 @@ Do the borrow at self.internal.render in lib.rs?
 This will probably all compile and it's all safe code. If the comments about safety are true,
 the borrow_mut calls should not fail. We will see.
 
+## 2024-10-14
+
+Fix all other compile errors from WGPU change.
+
 
   
   

@@ -12,8 +12,8 @@ use wgpu::{Instance, PresentMode, SurfaceError};
 use winit::{
     error::EventLoopError,
     event::Event,
-    event_loop::{ControlFlow, EventLoop, EventLoopBuilder, EventLoopWindowTarget},
-    window::{Window, WindowBuilder},
+    event_loop::{ControlFlow, EventLoop, EventLoopBuilder, ActiveEventLoop},
+    window::{Window, WindowAttributes},
 };
 
 mod assets;
@@ -40,17 +40,17 @@ pub struct SetupContext<'a, T: 'static = ()> {
 }
 
 /// Context passed to the event handler.
-pub struct EventContext<'a, T: 'static = ()> {
+pub struct EventContext<'a> {
     pub window: Option<&'a Window>,
     pub renderer: &'a Arc<Renderer>,
     pub routines: &'a Arc<DefaultRoutines>,
     pub base_rendergraph: &'a BaseRenderGraph,
     pub resolution: UVec2,
     pub control_flow: &'a mut dyn FnMut(winit::event_loop::ControlFlow),
-    pub event_loop_window_target: &'a EventLoopWindowTarget<T>,
+    pub event_loop_window_target: &'a ActiveEventLoop,
 }
 
-pub struct RedrawContext<'a, T: 'static = ()> {
+pub struct RedrawContext<'a> {
     pub window: Option<&'a Window>,
     pub renderer: &'a Arc<Renderer>,
     pub routines: &'a Arc<DefaultRoutines>,
@@ -58,7 +58,7 @@ pub struct RedrawContext<'a, T: 'static = ()> {
     pub surface_texture: &'a wgpu::Texture,
     pub resolution: UVec2,
     pub control_flow: &'a mut dyn FnMut(winit::event_loop::ControlFlow),
-    pub event_loop_window_target: Option<&'a EventLoopWindowTarget<T>>,
+    pub event_loop_window_target: Option<&'a ActiveEventLoop>,
     pub delta_t_seconds: f32,
 }
 
@@ -84,11 +84,12 @@ pub trait App<T: 'static = ()> {
         std::panic::set_hook(Box::new(console_error_panic_hook::hook));
     }
 
-    fn create_window(&mut self, builder: WindowBuilder) -> Result<(EventLoop<T>, Window), EventLoopError> {
+    fn create_window(&mut self, window_attributes: WindowAttributes) -> Result<(EventLoop<T>, Window), EventLoopError> {
         profiling::scope!("creating window");
 
-        let event_loop = EventLoopBuilder::with_user_event().build()?;
-        let window = builder.build(&event_loop).expect("Could not build window");
+        let event_loop = EventLoop::with_user_event().build()?;
+        //////let window = builder.build(&event_loop).expect("Could not build window");
+        let window = event_loop.create_window(window_attributes).expect("Could not build window"); // (JN) for winit 0.30
 
         #[cfg(target_arch = "wasm32")]
         {
@@ -142,12 +143,12 @@ pub trait App<T: 'static = ()> {
     }
 
     /// Handle a non-redraw event.
-    fn handle_event(&mut self, context: EventContext<'_, T>, event: Event<T>) {
+    fn handle_event(&mut self, context: EventContext, event: Event<T>) {
         let _ = (context, event);
     }
 
     /// Handle a redraw event.
-    fn handle_redraw(&mut self, context: RedrawContext<'_, T>);
+    fn handle_redraw(&mut self, context: RedrawContext<'_>);
 
     /// Called after each redraw for post-processing, if needed.
     /// By default, this queues another redraw.
@@ -174,12 +175,12 @@ pub struct DefaultRoutines {
     pub tonemapping: Mutex<rend3_routine::tonemapping::TonemappingRoutine>,
 }
 
-pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_builder: WindowBuilder) {
+pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_attributes: WindowAttributes) {
     app.register_logger();
     app.register_panic_hook();
 
     // Create the window invisible until we are rendering
-    let (event_loop, window) = app.create_window(window_builder.with_visible(false)).unwrap();
+    let (event_loop, window) = app.create_window(window_attributes.with_visible(false)).unwrap();
     let window = Arc::new(window);
     let window_size = window.inner_size();
 
@@ -279,7 +280,7 @@ pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_bui
     #[allow(clippy::let_unit_value)]
     let _ = (event_loop_function)(
         event_loop,
-        move |event: Event<T>, event_loop_window_target: &EventLoopWindowTarget<T>| {
+        move |event: Event<T>, event_loop_window_target: &ActiveEventLoop| {
             let mut control_flow = event_loop_window_target.control_flow();
             if let Some(suspend) =
                 handle_surface(&app, &window, &event, &iad.instance, &mut surface, &renderer, &mut stored_surface_info)
@@ -431,14 +432,14 @@ fn handle_surface<A: App<T>, T: 'static>(
     }
 }
 
-pub fn start<A: App<T> + 'static, T: 'static>(app: A, window_builder: WindowBuilder) {
+pub fn start<A: App<T> + 'static, T: 'static>(app: A, window_attributes: WindowAttributes) {
     #[cfg(target_arch = "wasm32")]
     {
-        wasm_bindgen_futures::spawn_local(async_start(app, window_builder));
+        wasm_bindgen_futures::spawn_local(async_start(app, window_attributes));
     }
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        pollster::block_on(async_start(app, window_builder));
+        pollster::block_on(async_start(app, window_attributes));
     }
 }

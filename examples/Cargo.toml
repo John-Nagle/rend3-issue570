@@ -22,7 +22,7 @@ anyhow = "1"
 # The egui immediate mode gui library
 egui = "0.29"
 # Winit integration with egui (turn off the clipboard feature)
-egui-winit = { version = "0.28", default-features = false, features = ["links", "wayland"] }
+egui-winit = { version = "0.29", default-features = false, features = ["links", "wayland"] }
 # logging
 env_logger = { version = "0.11", default-features = false, features = ["auto-color", "humantime"] }
 # Linear algebra library
@@ -64,7 +64,7 @@ webbrowser = "1"
 # Instant but portable to the web
 web-time = "1.1"
 # windowing
-winit = "0.29.4"
+winit = "0.30"
 # Integration with wgpu
 wgpu = "22.1"
 # Profiling with wgpu
