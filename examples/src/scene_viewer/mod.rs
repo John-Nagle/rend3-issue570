@@ -579,7 +579,7 @@ impl rend3_framework::App for SceneViewer {
         }
     }
 
-    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_, ()>) {
+    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_>) {
         profiling::scope!("RedrawRequested");
 
         if let Some(ref receiver) = self.loading_reciever {

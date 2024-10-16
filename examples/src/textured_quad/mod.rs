@@ -123,7 +123,7 @@ impl rend3_framework::App for TexturedQuadExample {
         }
     }
 
-    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_, ()>) {
+    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_>) {
         // Swap the instruction buffers so that our frame's changes can be processed.
         context.renderer.swap_instruction_buffers();
         // Evaluate our frame's world-change instructions

@@ -102,6 +102,7 @@ impl rend3_framework::App for EguiExample {
                 &windowing.window,
                 Some(context.scale_factor),
                 None,
+                None, // (JN) New max texture size field, not used.
             ))
         } else {
             None
@@ -165,7 +166,7 @@ impl rend3_framework::App for EguiExample {
         }
     }
 
-    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_, ()>) {
+    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_>) {
         let data = self.data.as_mut().unwrap();
 
         let input = if let Some(window) = context.window {

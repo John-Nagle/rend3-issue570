@@ -107,7 +107,7 @@ impl rend3_framework::App for SkinningExample {
         }));
     }
 
-    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_, ()>) {
+    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_>) {
         self.update_skeleton(context.renderer);
 
         // Swap the instruction buffers so that our frame's changes can be processed.

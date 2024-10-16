@@ -106,7 +106,7 @@ impl rend3_framework::App for AnimationExample {
         self.animated_objects = vec![animated_object, animated_object2];
     }
 
-    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_, ()>) {
+    fn handle_redraw(&mut self, context: rend3_framework::RedrawContext<'_>) {
         self.animated_objects.iter_mut().for_each(|animated_object| {
             update(context.renderer, context.delta_t_seconds, animated_object);
         });
