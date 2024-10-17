@@ -202,6 +202,7 @@ impl<M: Material> ForwardRoutine<M> {
                 SampleCount::One => &self.pipeline_s1,
                 SampleCount::Four => &self.pipeline_s4,
             };
+            let mut rpass = rpass.borrow_mut(); // actual rpass from Rc
             rpass.set_index_buffer(ctx.eval_output.mesh_buffer.slice(..), IndexFormat::Uint32);
             rpass.set_pipeline(pipeline);
             rpass.set_bind_group(0, whole_frame_uniform_bg, &[]);

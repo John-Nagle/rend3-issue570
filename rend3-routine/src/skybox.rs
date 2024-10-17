@@ -101,7 +101,7 @@ impl SkyboxRoutine {
                     SampleCount::One => &self.pipelines.pipeline_s1,
                     SampleCount::Four => &self.pipelines.pipeline_s4,
                 };
-
+                let mut rpass = rpass.borrow_mut();
                 rpass.set_pipeline(pipeline);
                 rpass.set_bind_group(0, forward_uniform_bg, &[]);
                 rpass.set_bind_group(1, bg, &[]);

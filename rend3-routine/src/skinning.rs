@@ -223,7 +223,7 @@ pub fn add_skinning_to_graph<'node>(graph: &mut RenderGraph<'node>, gpu_skinner:
         // Avoid running the compute pass if there are no skeletons. This
         // prevents binding an empty buffer
         if ctx.data_core.skeleton_manager.skeletons().len() > 0 {
-            gpu_skinner.execute_pass(&ctx, encoder, &skinning_input);
+            gpu_skinner.execute_pass(&ctx, &mut encoder.borrow_mut(), &skinning_input);
         }
     });
 }

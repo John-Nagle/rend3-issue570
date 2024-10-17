@@ -89,7 +89,7 @@ impl EguiRenderRoutine {
                 &self.screen_descriptor,
             );
             drop(cmd_buffer);
-            self.internal.render(rpass, input.clipped_meshes, &self.screen_descriptor);
+            self.internal.render(&mut rpass.borrow_mut(), input.clipped_meshes, &self.screen_descriptor);
         });
     }
 

@@ -145,7 +145,7 @@ impl TonemappingRoutine {
                 Some("blit src bg"),
                 &self.bgl,
             ));
-
+            let mut rpass = rpass.borrow_mut();
             rpass.set_pipeline(&self.pipeline);
             rpass.set_bind_group(0, forward_uniform_bg, &[]);
             rpass.set_bind_group(1, blit_src_bg, &[]);
