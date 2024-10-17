@@ -74,7 +74,7 @@ impl RenderGraphEncoderOrPass {
     /// # Panics
     ///
     /// - If a take_* function is called twice.
-    pub fn take_rpass(&mut self, _handle: DeclaredDependency<RenderPassHandle>) -> Rc<RefCell<RenderPass>> {
+    pub fn take_rpass(&mut self, _handle: DeclaredDependency<RenderPassHandle>) -> Rc<RefCell<RenderPass<'static>>> {
         match mem::take(&mut self.0) {
             RenderGraphEncoderOrPassInner::Encoder(_) => {
                 panic!("Internal rendergraph error: trying to get renderpass when one was not asked for")

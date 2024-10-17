@@ -612,14 +612,15 @@ impl<'node> RenderGraph<'node> {
                 stencil_ops: stencil_load,
             }
         });
-        let render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
+        let mut binding = encoder.borrow_mut();
+        let render_pass = binding.begin_render_pass(&RenderPassDescriptor {
             label: None,
             color_attachments: &color_attachments,
             depth_stencil_attachment,
             timestamp_writes: None,
             occlusion_query_set: None,
         });
-        Rc::new(RefCell::new(render_pass))  // return mutable form.
+        Rc::new(RefCell::new(render_pass.forget_lifetime()))  // return internally mutable form not tied to encoder lifetime
     }
 }
 
