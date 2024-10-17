@@ -124,6 +124,10 @@ Fix all other compile errors from Winit changes. [DONE]
 Completed fixing Winit problems, with event loop disabled.
 Time to do the above changes to Rend3.
 
+Most of it now compiles.
+
+Trouble at line 507 of graph.rs
+
 
 
 
