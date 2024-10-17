@@ -1,5 +1,6 @@
 use std::{
     any::Any,
+    rc::{Rc},
     cell::{RefCell, UnsafeCell},
     collections::hash_map::Entry,
     marker::PhantomData,
@@ -439,7 +440,7 @@ impl<'node> RenderGraph<'node> {
                             )
                             .viewport;
 
-                        rpass.set_viewport(
+                        rpass.borrow_mut().set_viewport(
                             viewport.offset.x as f32,
                             viewport.offset.y as f32,
                             viewport.size.x as f32,
@@ -448,7 +449,7 @@ impl<'node> RenderGraph<'node> {
                             1.0,
                         );
 
-                        RenderGraphEncoderOrPassInner::RenderPass(rpass)
+                        RenderGraphEncoderOrPassInner::RenderPass(Rc::clone(rpass))
                     }
                     // SAFETY: There is no active renderpass to borrow this. This reference lasts for the duration of
                     // the call to exec.
@@ -478,7 +479,7 @@ impl<'node> RenderGraph<'node> {
                 (node.exec)(ctx);
 
                 let mut encoder_or_rpass = match rpass {
-                    Some(ref mut rpass) => RenderGraphEncoderOrPassInner::RenderPass(rpass),
+                    Some(ref mut rpass) => RenderGraphEncoderOrPassInner::RenderPass(Rc::clone(&rpass)),
                     // SAFETY: There is no active renderpass to borrow this. This reference lasts for the duration of
                     // the call to exec.
                     None => RenderGraphEncoderOrPassInner::Encoder(unsafe { &mut *encoder_cell.get() }),
@@ -521,13 +522,13 @@ impl<'node> RenderGraph<'node> {
     #[allow(clippy::too_many_arguments)]
     fn create_rpass_from_desc<'rpass>(
         desc: &RenderPassTargets,
-        encoder: &'rpass mut CommandEncoder,
+        encoder: &Rc<RefCell<CommandEncoder>>,
         node_idx: usize,
         pass_end_idx: usize,
         resource_spans: &'rpass FastHashMap<GraphResource, ResourceSpan>,
         active_views: &'rpass FastHashMap<TextureRegion, TextureView>,
         active_imported_views: &'rpass FastHashMap<TextureRegion, TextureView>,
-    ) -> RenderPass<'rpass> {
+    ) -> Rc<RefCell<RenderPass<'static>>> {
         let color_attachments: Vec<_> = desc
             .targets
             .iter()
@@ -611,13 +612,14 @@ impl<'node> RenderGraph<'node> {
                 stencil_ops: stencil_load,
             }
         });
-        encoder.begin_render_pass(&RenderPassDescriptor {
+        let render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
             label: None,
             color_attachments: &color_attachments,
             depth_stencil_attachment,
             timestamp_writes: None,
             occlusion_query_set: None,
-        })
+        });
+        Rc::new(RefCell::new(render_pass))  // return mutable form.
     }
 }
 

@@ -117,7 +117,15 @@ the borrow_mut calls should not fail. We will see.
 
 ## 2024-10-14
 
-Fix all other compile errors from WGPU change.
+Fix all other compile errors from Winit changes. [DONE]
+
+## 2024-10-16
+
+Completed fixing Winit problems, with event loop disabled.
+Time to do the above changes to Rend3.
+
+
+
 
 
   
