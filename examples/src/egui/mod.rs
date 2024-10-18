@@ -175,7 +175,7 @@ impl rend3_framework::App for EguiExample {
             egui::RawInput::default()
         };
 
-        data.context.begin_frame(input);
+        data.context.begin_pass(input);
 
         // Insert egui commands here
         let ctx = &data.context;
@@ -201,7 +201,7 @@ impl rend3_framework::App for EguiExample {
 
         // End the UI frame. Now let's draw the UI with our Backend, we could also
         // handle the output here
-        let egui::FullOutput { shapes, textures_delta, .. } = data.context.end_frame();
+        let egui::FullOutput { shapes, textures_delta, .. } = data.context.end_pass();
         let paint_jobs = data.context.tessellate(shapes, scale_factor);
 
         let input = rend3_egui::Input { clipped_meshes: &paint_jobs, textures_delta, context: data.context.clone() };
