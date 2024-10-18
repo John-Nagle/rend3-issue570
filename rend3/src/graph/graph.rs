@@ -389,7 +389,7 @@ impl<'node> RenderGraph<'node> {
 
         profiling::scope!("Run Nodes");
 
-        let mut encoder_cell =
+        let encoder_cell =
             Rc::new(RefCell::new(renderer.device.create_command_encoder(&CommandEncoderDescriptor::default())));
         let rpass_temps_cell = UnsafeCell::new(RpassTemporaryPool::new());
 
@@ -406,9 +406,9 @@ impl<'node> RenderGraph<'node> {
                 if let Some(ref desc) = node.rpass {
                     rpass = Some(Self::create_rpass_from_desc(
                         desc,
-                        // SAFETY: There are two things which borrow this encoder: the renderpass and the node's
-                        // encoder reference. Both of these have died by this point.
-                        //////unsafe { &mut *encoder_cell.get() },
+                        //  SAFETY: There are two things which borrow this encoder: the renderpass and the node's
+                        //  encoder reference. Both of these have died by this point.
+                        //  Now uses Rc, so that's checked.
                         &encoder_cell,
                         idx,
                         renderpass_ends[next_rpass_idx],
@@ -452,9 +452,9 @@ impl<'node> RenderGraph<'node> {
 
                         RenderGraphEncoderOrPassInner::RenderPass(Rc::clone(rpass))
                     }
-                    // SAFETY: There is no active renderpass to borrow this. This reference lasts for the duration of
-                    // the call to exec.
-                    //////None => RenderGraphEncoderOrPassInner::Encoder(unsafe { &mut *encoder_cell.get() }),
+                    //  SAFETY: There is no active renderpass to borrow this. This reference lasts for the duration of
+                    //  the call to exec.
+                    //  Now uses Rc, so it's safe.
                     None => RenderGraphEncoderOrPassInner::Encoder(Rc::clone(&encoder_cell)),
                 };
 
@@ -482,9 +482,9 @@ impl<'node> RenderGraph<'node> {
 
                 let mut encoder_or_rpass = match rpass {
                     Some(ref mut rpass) => RenderGraphEncoderOrPassInner::RenderPass(Rc::clone(&rpass)),
-                    // SAFETY: There is no active renderpass to borrow this. This reference lasts for the duration of
-                    // the call to exec.
-                    //////None => RenderGraphEncoderOrPassInner::Encoder(unsafe { &mut *encoder_cell.get() }),
+                    //  SAFETY: There is no active renderpass to borrow this. This reference lasts for the duration of
+                    //  the call to exec.
+                    //  It's now safe code using Rc (JN)
                     None => RenderGraphEncoderOrPassInner::Encoder(Rc::clone(&encoder_cell)),
                 };
 
@@ -501,9 +501,8 @@ impl<'node> RenderGraph<'node> {
         unsafe { (*rpass_temps_cell.get()).clear() }
         drop(rpass_temps_cell);
 
-        // SAFETY: this is safe as we've dropped all renderpasses that possibly borrowed
-        // it
-        //////let encoder = encoder_cell.into_inner();
+        //  SAFETY: this is safe as we've dropped all renderpasses that possibly borrowed it.
+        //  It's now safe code using Rc. (JN)
         eval_output.cmd_bufs.push(Rc::into_inner(encoder_cell).unwrap().into_inner().finish());
 
         let mut resolve_encoder = renderer
