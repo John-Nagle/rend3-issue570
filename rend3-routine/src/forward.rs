@@ -184,11 +184,12 @@ impl<M: Material> ForwardRoutine<M> {
                 usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
                 mapped_at_creation: true,
             }));
-            let mut mapping = per_camera_uniform_buffer.slice(..).get_mapped_range_mut();
-            StorageBuffer::new(&mut *mapping).write(&per_camera_uniform_values).unwrap();
-            drop(mapping);
-            per_camera_uniform_buffer.unmap();
-
+            {   profiling::scope!("Mapping GPU memory");
+                let mut mapping = per_camera_uniform_buffer.slice(..).get_mapped_range_mut();
+                StorageBuffer::new(&mut *mapping).write(&per_camera_uniform_values).unwrap();
+                drop(mapping);
+                per_camera_uniform_buffer.unmap();
+            }
             let per_material_bg = ctx.temps.add(
                 BindGroupBuilder::new()
                     .append_buffer(ctx.data_core.object_manager.buffer::<M>().unwrap())
@@ -215,6 +216,7 @@ impl<M: Material> ForwardRoutine<M> {
                 rpass.set_bind_group(2, bg, &[]);
             }
 
+            profiling::scope!("Binding");
             for (idx, object) in objects.into_iter() {
                 let material = archetype_view.material(*object.material_handle);
                 if material.inner.key() != self.material_key {
