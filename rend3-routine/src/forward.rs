@@ -216,24 +216,27 @@ impl<M: Material> ForwardRoutine<M> {
                 rpass.set_bind_group(2, bg, &[]);
             }
 
-            profiling::scope!("Binding");
+            profiling::scope!("Binding/drawing");
             for (idx, object) in objects.into_iter() {
                 let material = archetype_view.material(*object.material_handle);
                 if material.inner.key() != self.material_key {
                     continue;
                 }
-
-                // If we're in cpu driven mode, we need to update the texture bind group.
-                if ctx.renderer.profile.is_cpu_driven() {
-                    let texture_bind_group = material.bind_group_index.into_cpu();
-                    rpass.set_bind_group(2, ctx.data_core.material_manager.texture_bind_group(texture_bind_group), &[]);
+                {   profiling::scope!("Binding");
+                    // If we're in cpu driven mode, we need to update the texture bind group.
+                    if ctx.renderer.profile.is_cpu_driven() {
+                        let texture_bind_group = material.bind_group_index.into_cpu();
+                        rpass.set_bind_group(2, ctx.data_core.material_manager.texture_bind_group(texture_bind_group), &[]);
+                    }
+                    rpass.set_bind_group(1, per_material_bg, &[]);
                 }
-                rpass.set_bind_group(1, per_material_bg, &[]);
-                rpass.draw_indexed(
-                    object.inner.first_index..object.inner.first_index + object.inner.index_count,
-                    0,
-                    idx.idx as u32..idx.idx as u32 + 1,
-                )
+                {   profiling::scope!("Drawing");
+                    rpass.draw_indexed(
+                        object.inner.first_index..object.inner.first_index + object.inner.index_count,
+                        0,
+                        idx.idx as u32..idx.idx as u32 + 1,
+                    )   
+                }
             }
         });
     }
