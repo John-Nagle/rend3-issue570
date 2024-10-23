@@ -222,7 +222,7 @@ impl<M: Material> ForwardRoutine<M> {
                 if material.inner.key() != self.material_key {
                     continue;
                 }
-                {   profiling::scope!("Binding");
+                {   //////profiling::scope!("Binding"); //  Can't leave this enabled; major slowdown.
                     // If we're in cpu driven mode, we need to update the texture bind group.
                     if ctx.renderer.profile.is_cpu_driven() {
                         let texture_bind_group = material.bind_group_index.into_cpu();
@@ -230,7 +230,7 @@ impl<M: Material> ForwardRoutine<M> {
                     }
                     rpass.set_bind_group(1, per_material_bg, &[]);
                 }
-                {   profiling::scope!("Drawing");
+                {   //////profiling::scope!("Drawing"); //  Can't leave this enabled; major slowdown.
                     rpass.draw_indexed(
                         object.inner.first_index..object.inner.first_index + object.inner.index_count,
                         0,
