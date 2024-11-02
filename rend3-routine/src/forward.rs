@@ -213,7 +213,7 @@ impl<M: Material> ForwardRoutine<M> {
                 }
             }
             if let ProfileData::Gpu(ref bg) = ctx.eval_output.d2_texture.bg {
-                rpass.set_bind_group(2, bg, &[]);
+                rpass.set_bind_group(2, Some(&**bg), &[]);
             }
 
             profiling::scope!("Binding/drawing");
@@ -228,7 +228,7 @@ impl<M: Material> ForwardRoutine<M> {
                         let texture_bind_group = material.bind_group_index.into_cpu();
                         rpass.set_bind_group(2, ctx.data_core.material_manager.texture_bind_group(texture_bind_group), &[]);
                     }
-                    rpass.set_bind_group(1, per_material_bg, &[]);
+                    rpass.set_bind_group(1, Some(&*per_material_bg), &[]);
                 }
                 {   //////profiling::scope!("Drawing"); //  Can't leave this enabled; major slowdown.
                     rpass.draw_indexed(

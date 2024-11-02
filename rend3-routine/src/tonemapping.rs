@@ -147,8 +147,8 @@ impl TonemappingRoutine {
             ));
             let mut rpass = rpass.borrow_mut();
             rpass.set_pipeline(&self.pipeline);
-            rpass.set_bind_group(0, forward_uniform_bg, &[]);
-            rpass.set_bind_group(1, blit_src_bg, &[]);
+            rpass.set_bind_group(0, Some(&*forward_uniform_bg), &[]);
+            rpass.set_bind_group(1, Some(&*blit_src_bg), &[]);
             rpass.draw(0..3, 0..1);
         });
     }
