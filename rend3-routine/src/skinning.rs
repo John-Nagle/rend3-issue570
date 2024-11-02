@@ -173,7 +173,7 @@ impl GpuSkinner {
             label: Some("Gpu skinning pipeline"),
             layout: Some(&layout),
             module: &module,
-            entry_point: "main",
+            entry_point: Some("main"),
             compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
             cache: None,    // (JN) no cache used
         });

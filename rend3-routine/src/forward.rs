@@ -358,7 +358,7 @@ fn build_forward_pipeline_inner<M: Material>(
         layout: Some(pll),
         vertex: VertexState {
             module: args.shaders.vs_module,
-            entry_point: args.shaders.vs_entry,
+            entry_point: Some(args.shaders.vs_entry),
             buffers: &[],
             compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
         },
@@ -388,7 +388,7 @@ fn build_forward_pipeline_inner<M: Material>(
         multisample: MultisampleState { count: samples as u32, ..Default::default() },
         fragment: Some(FragmentState {
             module: args.shaders.fs_module,
-            entry_point: args.shaders.fs_entry,
+            entry_point: Some(args.shaders.fs_entry),
             targets: &[],
             compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
         }),

@@ -26,3 +26,10 @@ opt-level = 3
 [profile.release]
 debug = true
 lto = "thin"
+
+#   Temporary override of out of date WGPU profiler
+[patch.crates-io]
+wgpu-profiler = { version = "^0.18.3", git = 'https://github.com/John-Nagle/wgpu-profiler' }
+egui-wgpu = { version = "0.29.1", git = 'https://github.com/emilk/egui.git'}
+epaint = { version = "0.29.1", git = 'https://github.com/emilk/egui.git' }
+emath = { version = "0.29.1", git = 'git+https://github.com/emilk/egui.git' }

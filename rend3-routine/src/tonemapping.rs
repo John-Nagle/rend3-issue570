@@ -54,7 +54,7 @@ fn create_pipeline(
         layout: Some(&pll),
         vertex: VertexState {
             module: &module,
-            entry_point: "vs_main",
+            entry_point: Some("vs_main"),
             buffers: &[],
             compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
         },
@@ -71,7 +71,7 @@ fn create_pipeline(
         multisample: MultisampleState::default(),
         fragment: Some(FragmentState {
             module: &module,
-            entry_point: fs_entry_point,
+            entry_point: Some(fs_entry_point),
             targets: &[Some(ColorTargetState { format: output_format, blend: None, write_mask: ColorWrites::all() })],
             compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
         }),

@@ -61,7 +61,7 @@ impl ScatterCopy {
             label: Some("ScatterCopy compute pipeline"),
             layout: Some(&pll),
             module: &sm,
-            entry_point: "cs_main",
+            entry_point: Some("cs_main"),
             compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
             cache: None, // no pipeline cache. New in WGPU 21
         });

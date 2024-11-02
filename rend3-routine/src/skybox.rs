@@ -143,7 +143,7 @@ impl SkyboxPipelines {
                 layout: Some(&pll),
                 vertex: VertexState {
                     module: &skybox_sm,
-                    entry_point: "vs_main",
+                    entry_point: Some("vs_main"),
                     buffers: &[],
                     compilation_options: PipelineCompilationOptions::default(), // use default WGPU options. New in WGPU 0.20 (JN)
                 },
@@ -166,7 +166,7 @@ impl SkyboxPipelines {
                 multisample: MultisampleState { count: samples as u32, ..Default::default() },
                 fragment: Some(FragmentState {
                     module: &skybox_sm,
-                    entry_point: "fs_main",
+                    entry_point: Some("fs_main"),
                     targets: &[Some(ColorTargetState {
                         format: TextureFormat::Rgba16Float,
                         blend: None,
