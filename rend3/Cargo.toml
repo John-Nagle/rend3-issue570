@@ -59,7 +59,7 @@ smallvec = "1"
 smartstring = "1.0"
 thiserror = "1"
 wgpu = "23.0"
-wgpu-profiler = "0.18.3"
+wgpu-profiler = "0.19"
 
 [dev-dependencies]
 pollster = "0.3"

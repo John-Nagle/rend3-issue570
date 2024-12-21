@@ -20,9 +20,9 @@ path = "src/main.rs"
 # error handling
 anyhow = "1"
 # The egui immediate mode gui library
-egui = "0.29"
+egui = "0.30"
 # Winit integration with egui (turn off the clipboard feature)
-egui-winit = { version = "0.29", default-features = false, features = ["links", "wayland"] }
+egui-winit = { version = "0.30", default-features = false, features = ["links", "wayland"] }
 # logging
 env_logger = { version = "0.11", default-features = false, features = ["auto-color", "humantime"] }
 # Linear algebra library
@@ -68,7 +68,7 @@ winit = "0.30"
 # Integration with wgpu
 wgpu = "23.0"
 # Profiling with wgpu
-wgpu-profiler = "0.18"
+wgpu-profiler = "0.19"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_log = "1"
