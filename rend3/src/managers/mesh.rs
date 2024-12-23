@@ -314,6 +314,6 @@ impl<'a> Index<RawMeshHandle> for LockedInternalMeshDataArray<'a> {
     type Output = InternalMesh;
 
     fn index(&self, handle: RawMeshHandle) -> &Self::Output {
-        self.0[handle.idx].as_ref().unwrap()
+        self.0[handle.idx].as_ref().expect("Entry in LockedInternalMeshDataArray should not be None")
     }
 }
