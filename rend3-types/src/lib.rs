@@ -71,6 +71,62 @@ impl<T> Hash for RawResourceHandle<T> {
         self.idx.hash(state);
     }
 }
+/*
+/// Function called to deindex a resource handle.
+#[cfg(not(target_arch = "wasm32"))]
+type ResourceDeindexer: dyn Fn(RawResourceHandle<T>) + Send + Sync;
+#[cfg(target_arch = "wasm32")]
+type ResourceDeindexer: dyn Fn(RawResourceHandle<T>);
+*/
+/// Ref counter for RawResourceHandle inside of ResourceHandle
+///
+/// Needed to avoid a race condition at de-indexing.
+///
+/// Soundness:
+/// - Deindexer can be called only once - yes
+//  - Deindexer will always be called on drop - yes.
+struct ResourceHandleRefcount<T: 'static> {
+    /// Called at drop to delete the item from the index.
+    #[cfg(not(target_arch = "wasm32"))]
+    deindexer: &'static(dyn Fn(RawResourceHandle<T>) + Send + Sync),
+    #[cfg(target_arch = "wasm32")]
+    deindexer: &'static(dyn Fn(RawResourceHandle<T>)),
+    //////deindexer: ResourceDeindexer
+    /// Index to the resource
+    raw: RawResourceHandle<T>,
+}
+
+impl<T> ResourceHandleRefcount<T> {
+    /// Usual new fn
+    pub fn new(destroy_fn: impl Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static, idx: usize) -> Self {
+        Self {
+            deindexer: Arc::new(destroy_fn),
+            raw: RawResourceHandle { idx, _phantom: PhantomData },
+        }
+    }
+    
+    /// Get the raw resource handle
+    pub fn get_raw(&self) -> RawResourceHandle<T>{
+        self.raw
+    }
+}
+
+impl<T> Drop for ResourceHandleRefcount<T> {
+    /// When this is dropped, deindex.
+    fn drop(&mut self) {
+        (self.deindexer)(self.raw);
+    }
+}
+
+impl<T> Debug for ResourceHandleRefcount<T> {
+    /// Debug formatting
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ResourceHandleRefcount")
+            //////.field("refcount", &Arc::strong_count(&self.refcount))
+            .field("idx", &self.raw.idx)
+            .finish()
+    }
+}
 
 /// Owning resource handle. Used as part of rend3's interface.
 pub struct ResourceHandle<T> {
@@ -79,14 +135,19 @@ pub struct ResourceHandle<T> {
     /// need to phone home. We're just reusing
     /// the allocation for both refcount and function
     /// purposes.
+/*
     #[cfg(not(target_arch = "wasm32"))]
     refcount: Arc<dyn Fn(RawResourceHandle<T>) + Send + Sync>,
     #[cfg(target_arch = "wasm32")]
     refcount: Arc<dyn Fn(RawResourceHandle<T>)>,
     raw: RawResourceHandle<T>,
+*/
+    /// Deindexer and its index
+    refcount: Arc<ResourceHandleRefcount<T>>,
+    /// Dummy to prevent using wrong type
     _phantom: PhantomData<T>,
 }
-
+/*
 impl<T> Drop for ResourceHandle<T> {
     fn drop(&mut self) {
         if Arc::strong_count(&self.refcount) == 1 {
@@ -94,25 +155,25 @@ impl<T> Drop for ResourceHandle<T> {
         }
     }
 }
+*/
 
 impl<T> Debug for ResourceHandle<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ResourceHandle")
-            .field("refcount", &Arc::strong_count(&self.refcount))
-            .field("idx", &self.raw.idx)
+            .field("refcount", &Arc::strong_count(&self.refcount.deindexer))
+            .field("idx", &self.get_raw().idx)
             .finish()
     }
 }
-
 impl<T> Clone for ResourceHandle<T> {
     fn clone(&self) -> Self {
-        Self { refcount: self.refcount.clone(), raw: self.raw, _phantom: self._phantom }
+        Self { refcount: self.refcount.clone(), _phantom: self._phantom }
     }
 }
 
 impl<T> PartialEq for ResourceHandle<T> {
     fn eq(&self, other: &Self) -> bool {
-        self.raw.idx == other.raw.idx
+        self.get_raw().idx == other.refcount.get_raw().idx
     }
 }
 
@@ -120,7 +181,7 @@ impl<T> Eq for ResourceHandle<T> {}
 
 impl<T> Hash for ResourceHandle<T> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.raw.idx.hash(state);
+        self.get_raw().idx.hash(state);
     }
 }
 
@@ -130,8 +191,9 @@ impl<T> ResourceHandle<T> {
     /// Part of rend3's internal interface, use `Renderer::add_*` instead.
     pub fn new(destroy_fn: impl Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static, idx: usize) -> Self {
         Self {
-            refcount: Arc::new(destroy_fn),
-            raw: RawResourceHandle { idx, _phantom: PhantomData },
+            refcount: Arc::new(ResourceHandleRefcount::new(destroy_fn, idx)),
+            //////refcount: Arc::new(destroy_fn),
+            //////raw: RawResourceHandle { idx, _phantom: PhantomData },
             _phantom: PhantomData,
         }
     }
@@ -140,7 +202,7 @@ impl<T> ResourceHandle<T> {
     ///
     /// Part of rend3's internal interface for accessing internal resrouces
     pub fn get_raw(&self) -> RawResourceHandle<T> {
-        self.raw
+        self.refcount.get_raw()
     }
 }
 
@@ -148,7 +210,7 @@ impl<T> Deref for ResourceHandle<T> {
     type Target = RawResourceHandle<T>;
 
     fn deref(&self) -> &Self::Target {
-        &self.raw
+        &self.get_raw()
     }
 }
 
