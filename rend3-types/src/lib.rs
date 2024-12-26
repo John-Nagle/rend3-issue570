@@ -85,7 +85,7 @@ type ResourceDeindexer: dyn Fn(RawResourceHandle<T>);
 /// Soundness:
 /// - Deindexer can be called only once - yes
 //  - Deindexer will always be called on drop - yes.
-struct ResourceHandleRefcount<T: 'static> {
+struct ResourceHandleRefcount<T> {
     /// Called at drop to delete the item from the index.
     #[cfg(not(target_arch = "wasm32"))]
     deindexer: &'static(dyn Fn(RawResourceHandle<T>) + Send + Sync),
