@@ -88,9 +88,9 @@ type ResourceDeindexer: dyn Fn(RawResourceHandle<T>);
 struct ResourceHandleRefcount<T> {
     /// Called at drop to delete the item from the index.
     #[cfg(not(target_arch = "wasm32"))]
-    deindexer: &'static(dyn Fn(RawResourceHandle<T>) + Send + Sync),
+    deindexer: dyn Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static,
     #[cfg(target_arch = "wasm32")]
-    deindexer: &'static(dyn Fn(RawResourceHandle<T>)),
+    deindexer: dyn Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static,
     //////deindexer: ResourceDeindexer
     /// Index to the resource
     raw: RawResourceHandle<T>,
@@ -100,7 +100,7 @@ impl<T> ResourceHandleRefcount<T> {
     /// Usual new fn
     pub fn new(destroy_fn: impl Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static, idx: usize) -> Self {
         Self {
-            deindexer: &destroy_fn,
+            deindexer: destroy_fn,
             raw: RawResourceHandle { idx, _phantom: PhantomData },
         }
     }
