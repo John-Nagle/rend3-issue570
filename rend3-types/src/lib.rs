@@ -100,7 +100,7 @@ impl<T> ResourceHandleRefcount<T> {
     /// Usual new fn
     pub fn new(destroy_fn: impl Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static, idx: usize) -> Self {
         Self {
-            deindexer: Arc::new(destroy_fn),
+            deindexer: &destroy_fn,
             raw: RawResourceHandle { idx, _phantom: PhantomData },
         }
     }
@@ -160,7 +160,7 @@ impl<T> Drop for ResourceHandle<T> {
 impl<T> Debug for ResourceHandle<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ResourceHandle")
-            .field("refcount", &Arc::strong_count(&self.refcount.deindexer))
+            .field("refcount", &Arc::strong_count(&self.refcount))
             .field("idx", &self.get_raw().idx)
             .finish()
     }
@@ -202,7 +202,7 @@ impl<T> ResourceHandle<T> {
     ///
     /// Part of rend3's internal interface for accessing internal resrouces
     pub fn get_raw(&self) -> RawResourceHandle<T> {
-        self.refcount.get_raw()
+        self.refcount.raw
     }
 }
 
@@ -210,7 +210,7 @@ impl<T> Deref for ResourceHandle<T> {
     type Target = RawResourceHandle<T>;
 
     fn deref(&self) -> &Self::Target {
-        &self.get_raw()
+        &self.refcount.raw
     }
 }
 
