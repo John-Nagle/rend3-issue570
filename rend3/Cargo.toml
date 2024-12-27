@@ -1,6 +1,6 @@
 [package]
 name = "rend3"
-version = "0.23.0"
+version = "0.23.1"
 authors = ["The rend3 Developers"]
 edition = "2021"
 description = "Easy to use, customizable, efficient 3D renderer library built on wgpu."
