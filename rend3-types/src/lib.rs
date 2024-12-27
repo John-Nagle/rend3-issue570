@@ -86,21 +86,24 @@ type ResourceDeindexer: dyn Fn(RawResourceHandle<T>);
 /// - Deindexer can be called only once - yes
 //  - Deindexer will always be called on drop - yes.
 struct ResourceHandleRefcount<T> {
-    /// Called at drop to delete the item from the index.
-    #[cfg(not(target_arch = "wasm32"))]
-    deindexer: dyn Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static,
-    #[cfg(target_arch = "wasm32")]
-    deindexer: dyn Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static,
     //////deindexer: ResourceDeindexer
     /// Index to the resource
     raw: RawResourceHandle<T>,
+    /// Called at drop to delete the item from the index.
+    /// This needs a Box or Arc because the closure is a variable-sized object.
+    /// Arc would be better if the callers generated an Arc, because it could be a cheap clone.
+    #[cfg(not(target_arch = "wasm32"))]
+    deindexer: Box<dyn Fn(RawResourceHandle<T>) + Send + Sync + 'static>,
+    #[cfg(target_arch = "wasm32")]
+    deindexer: Box<dyn Fn(RawResourceHandle<T>) + 'static>,
+
 }
 
 impl<T> ResourceHandleRefcount<T> {
     /// Usual new fn
     pub fn new(destroy_fn: impl Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static, idx: usize) -> Self {
         Self {
-            deindexer: destroy_fn,
+            deindexer: Box::new(destroy_fn),
             raw: RawResourceHandle { idx, _phantom: PhantomData },
         }
     }
