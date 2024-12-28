@@ -1,6 +1,6 @@
 [package]
 name = "rend3-framework"
-version = "0.23.0"
+version = "0.23.1"
 authors = ["The rend3 Developers"]
 edition = "2021"
 description = "Simple framework for making applications with the rend3 rendering library."
@@ -18,8 +18,8 @@ glam = "0.28"
 log = "0.4"
 parking_lot = "0.12"
 profiling = { version = "1", default-features = false }
-rend3 = { version = "0.23.0", path = "../rend3" }
-rend3-routine = { version = "0.23.0", path = "../rend3-routine" }
+rend3 = { version = "0.23.1", path = "../rend3" }
+rend3-routine = { version = "0.23.1", path = "../rend3-routine" }
 thiserror = { version = "1" }
 web-time = "1.1"
 winit = { version = "0.30", features = ["rwh_05"] }
