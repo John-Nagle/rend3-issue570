@@ -6,10 +6,46 @@ use crate::{
     Renderer,
 };
 
+use std::collections::{HashSet};
+
+/// Set to true to check instructions for deletion before use.
+/// This is a debug trap.
+const CHECK_INSTRUCTIONS: bool = true;
+
+/// Instruction checker. Checks for instructions which delete an object preceding instructions which use that object.
+/// This is a debug trap for a race condition.
+fn check_instructions(instructions: &Vec<Instruction>) {
+    profiling::scope!("Instruction checking");
+    let mut deleted_handles = HashSet::new();
+    for Instruction { kind, location : _} in instructions. iter() {
+        match kind {
+            InstructionKind::AddObject { handle, object } => {
+                //  Must not add a deleted object in the same pass.
+                if deleted_handles.contains(&handle.idx) {
+                    panic!("Add of deleted object of object handle #{}", handle.idx);
+                }
+                    
+            }
+            
+            InstructionKind::DeleteObject { handle } => {
+                //  Track deleted object
+                if !deleted_handles.insert(handle.idx) {
+                    panic!("Two deletes of object handle #{}", handle.idx);
+                }               
+            }
+            
+            _ => {}
+        }     
+    }
+}
+
 pub fn evaluate_instructions(renderer: &Renderer) -> InstructionEvaluationOutput {
     profiling::scope!("Renderer::evaluate_instructions");
 
     let mut instructions = renderer.instructions.consumer.lock();
+    if CHECK_INSTRUCTIONS {
+        check_instructions(&instructions);   // debug trap
+    }
 
     // 16 encoders is a reasonable default
     let mut cmd_bufs = Vec::with_capacity(16);
