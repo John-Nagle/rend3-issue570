@@ -19,7 +19,7 @@ fn check_instructions(instructions: &Vec<Instruction>) {
     let mut deleted_handles = HashSet::new();
     for Instruction { kind, location : _} in instructions. iter() {
         match kind {
-            InstructionKind::AddObject { handle, object } => {
+            InstructionKind::AddObject { handle, .. } => {
                 //  Must not add a deleted object in the same pass.
                 if deleted_handles.contains(&handle.idx) {
                     panic!("Add of deleted object of object handle #{}", handle.idx);
