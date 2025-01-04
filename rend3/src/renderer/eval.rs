@@ -10,7 +10,7 @@ use std::collections::{HashSet};
 
 /// Set to true to check instructions for deletion before use.
 /// This is a debug trap.
-const CHECK_INSTRUCTIONS: bool = true;
+const CHECK_INSTRUCTIONS: bool = false; // didn't fail in 20 hour test.
 
 /// Instruction checker. Checks for instructions which delete an object preceding instructions which use that object.
 /// This is a debug trap for a race condition.
