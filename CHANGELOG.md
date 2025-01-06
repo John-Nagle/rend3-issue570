@@ -38,7 +38,7 @@ None
 ### Changes
 - Upgraded dependent packages to WGPU 0.23, and appropriate versions of Egui and Winit.
 ### Fixes
-- Probably fixed issue 3: 
+- Probably fixed issue 3: https://github.com/John-Nagle/rend3-hp/issues/3
 - Fixed issue 4: https://github.com/John-Nagle/rend3-hp/issues/4
 
 ## v0.20.0
