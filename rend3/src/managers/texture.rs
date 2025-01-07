@@ -250,7 +250,7 @@ impl<T: 'static> TextureManager<T> {
         self.data[handle.idx] = Some(internal_texture);
     }
 
-    pub fn remove(&mut self, handle: RawResourceHandle<T>) {
+    pub fn remove(&mut self, handle: &RawResourceHandle<T>) {
         self.group_dirty = self.group_dirty.map_gpu(|_| true);
 
         self.data[handle.idx] = None;

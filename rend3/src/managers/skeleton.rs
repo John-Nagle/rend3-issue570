@@ -136,7 +136,7 @@ impl SkeletonManager {
         self.skeleton_count += 1;
     }
 
-    pub fn remove(&mut self, mesh_manager: &MeshManager, handle: RawSkeletonHandle) {
+    pub fn remove(&mut self, mesh_manager: &MeshManager, handle: &RawSkeletonHandle) {
         let skeleton = self.data[handle.idx].take().unwrap();
         self.global_joint_count -= skeleton.joint_matrices.len();
 
@@ -148,7 +148,7 @@ impl SkeletonManager {
         self.skeleton_count -= 1;
     }
 
-    pub fn set_joint_matrices(&mut self, handle: RawSkeletonHandle, mut joint_matrices: Vec<Mat4>) {
+    pub fn set_joint_matrices(&mut self, handle: &RawSkeletonHandle, mut joint_matrices: Vec<Mat4>) {
         let skeleton = self.data[handle.idx].as_mut().unwrap();
         assert!(
             skeleton.joint_matrices.len() <= joint_matrices.len(),

@@ -243,7 +243,7 @@ impl Renderer {
             InstructionKind::AddMaterial {
                 handle: *handle,
                 fill_invoke: Box::new(move |material_manager, device, profile, d2_manager, mat_handle| {
-                    material_manager.add(device, profile, d2_manager, mat_handle, material)
+                    material_manager.add(device, profile, d2_manager, &mat_handle, material)
                 }),
             },
             *Location::caller(),
@@ -258,7 +258,7 @@ impl Renderer {
             InstructionKind::ChangeMaterial {
                 handle: **handle,
                 change_invoke: Box::new(move |material_manager, device, d2_manager, mat_handle| {
-                    material_manager.update(device, d2_manager, mat_handle, material)
+                    material_manager.update(device, d2_manager, &mat_handle, material)
                 }),
             },
             *Location::caller(),

@@ -107,7 +107,7 @@ pub fn evaluate_instructions(renderer: &Renderer) -> InstructionEvaluationOutput
                 InstructionKind::AddObject { handle, object } => {
                     data_core.object_manager.add(
                         &renderer.device,
-                        handle,
+                        &handle,
                         object,
                         &renderer.mesh_manager,
                         &data_core.skeleton_manager,
@@ -115,19 +115,19 @@ pub fn evaluate_instructions(renderer: &Renderer) -> InstructionEvaluationOutput
                     );
                 }
                 InstructionKind::SetObjectTransform { handle, transform } => {
-                    data_core.object_manager.set_object_transform(handle, transform);
+                    data_core.object_manager.set_object_transform(&handle, transform);
                 }
                 InstructionKind::SetSkeletonJointDeltas { handle, joint_matrices } => {
-                    data_core.skeleton_manager.set_joint_matrices(handle, joint_matrices);
+                    data_core.skeleton_manager.set_joint_matrices(&handle, joint_matrices);
                 }
                 InstructionKind::AddDirectionalLight { handle, light } => {
-                    data_core.directional_light_manager.add(handle, light);
+                    data_core.directional_light_manager.add(&handle, light);
                 }
                 InstructionKind::ChangeDirectionalLight { handle, change } => {
-                    data_core.directional_light_manager.update(handle, change);
+                    data_core.directional_light_manager.update(&handle, change);
                 }
                 InstructionKind::AddPointLight { handle, light } => {
-                    data_core.point_light_manager.add(handle, light);
+                    data_core.point_light_manager.add(&handle, light);
                 }
                 InstructionKind::ChangePointLight { handle, change } => {
                     data_core.point_light_manager.update(handle, change);
@@ -150,40 +150,44 @@ pub fn evaluate_instructions(renderer: &Renderer) -> InstructionEvaluationOutput
                     );
                 }
                 InstructionKind::DeleteMesh { handle } => {
-                    renderer.resource_handle_allocators.mesh.deallocate(handle);
-                    renderer.mesh_manager.remove(handle)
+                    renderer.mesh_manager.remove(&handle);
+                    renderer.resource_handle_allocators.mesh.deallocate(handle);       // this finally consumes the handle.
+                    
                 }
-                InstructionKind::DeleteSkeleton { handle } => {
+                InstructionKind::DeleteSkeleton { handle } => {           
+                    data_core.skeleton_manager.remove(&renderer.mesh_manager, &handle);
                     renderer.resource_handle_allocators.skeleton.deallocate(handle);
-                    data_core.skeleton_manager.remove(&renderer.mesh_manager, handle)
                 }
-                InstructionKind::DeleteTexture2D { handle } => {
+                InstructionKind::DeleteTexture2D { handle } => {        
+                    data_core.d2_texture_manager.remove(&handle);
                     renderer.resource_handle_allocators.d2_texture.deallocate(handle);
-                    data_core.d2_texture_manager.remove(handle)
                 }
-                InstructionKind::DeleteTextureCube { handle } => {
+                InstructionKind::DeleteTextureCube { handle } => {                   
+                    data_core.d2c_texture_manager.remove(&handle);
                     renderer.resource_handle_allocators.d2c_texture.deallocate(handle);
-                    data_core.d2c_texture_manager.remove(handle)
                 }
-                InstructionKind::DeleteMaterial { handle } => {
+                InstructionKind::DeleteMaterial { handle } => {                    
+                    data_core.material_manager.remove(&handle);
                     renderer.resource_handle_allocators.material.deallocate(handle);
-                    data_core.material_manager.remove(handle)
                 }
-                InstructionKind::DeleteObject { handle } => {
+                InstructionKind::DeleteObject { handle } => {                   
+                    data_core.object_manager.remove(&handle);
                     renderer.resource_handle_allocators.object.deallocate(handle);
-                    data_core.object_manager.remove(handle)
                 }
                 InstructionKind::DeleteDirectionalLight { handle } => {
+                    data_core.directional_light_manager.remove(&handle);
                     renderer.resource_handle_allocators.directional_light.deallocate(handle);
-                    data_core.directional_light_manager.remove(handle)
+                    
                 }
                 InstructionKind::DeletePointLight { handle } => {
+                    data_core.point_light_manager.remove(&handle);
                     renderer.resource_handle_allocators.point_light.deallocate(handle);
-                    data_core.point_light_manager.remove(handle);
+                    
                 }
                 InstructionKind::DeleteGraphData { handle } => {
-                    renderer.resource_handle_allocators.graph_storage.deallocate(handle);
                     data_core.graph_storage.remove(&handle);
+                    renderer.resource_handle_allocators.graph_storage.deallocate(handle);
+                    
                 }
             }
         }

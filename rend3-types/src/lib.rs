@@ -991,7 +991,7 @@ pub struct Texture {
 }
 
 /// Describes a texture made from the mipmaps of another texture.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct TextureFromTexture {
     pub label: Option<String>,
     pub src: RawTexture2DHandle,

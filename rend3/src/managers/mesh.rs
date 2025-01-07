@@ -194,7 +194,7 @@ impl MeshManager {
         drop(data_guard);
     }
 
-    pub fn remove(&self, object_id: RawMeshHandle) {
+    pub fn remove(&self, object_id: &RawMeshHandle) {
         let mesh = self.data.lock()[object_id.idx].take().unwrap();
 
         let mut buffer_state = self.buffer_state.lock();
