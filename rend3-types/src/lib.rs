@@ -52,6 +52,7 @@ impl<T> Debug for RawResourceHandle<T> {
 /// ***IT IS UNSAFE THAT THIS IS COPYABLE***
 /// This may result in a RawResourceHandle outliving the index entry to which it points.
 /// ***NEEDS WORK***
+////// /*
 impl<T> Copy for RawResourceHandle<T> {}
 
 impl<T> Clone for RawResourceHandle<T> {
@@ -59,7 +60,7 @@ impl<T> Clone for RawResourceHandle<T> {
         *self
     }
 }
-
+////// */
 impl<T> PartialEq for RawResourceHandle<T> {
     fn eq(&self, other: &Self) -> bool {
         self.idx == other.idx
