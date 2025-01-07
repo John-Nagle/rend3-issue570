@@ -10,21 +10,43 @@ use std::collections::{HashSet};
 
 /// Set to true to check instructions for deletion before use.
 /// This is a debug trap.
-const CHECK_INSTRUCTIONS: bool = false; // didn't fail in 20 hour test.
+const CHECK_INSTRUCTIONS: bool = true; // didn't fail in 20 hour test without mesh check
 
 /// Instruction checker. Checks for instructions which delete an object preceding instructions which use that object.
 /// This is a debug trap for a race condition.
-fn check_instructions(instructions: &Vec<Instruction>) {
+fn check_instructions(renderer: &Renderer, instructions: &Vec<Instruction>) {
+    use rend3_types::{ObjectMeshKind, Object};
+    use crate::managers::MeshManager;
+    ///  Check that when we add an object, its mesh was not previously deleted.
+    fn check_mesh_in_add_object(
+        deleted_handles: &HashSet<usize>,
+        object: &Object,
+        mesh_manager: &MeshManager,
+    ) {
+        let mesh_manager_guard = mesh_manager.lock_internal_data();    // performance problem
+        match &object.mesh_kind {
+            ObjectMeshKind::Animated(_skeleton) => {} // no check
+            ObjectMeshKind::Static(mesh_handle) => {
+                let raw_mesh_handle = mesh_handle.get_raw();
+                if deleted_handles.contains(&raw_mesh_handle.idx) {
+                    panic!("Add of deleted mesh #{} at add object", raw_mesh_handle.idx);
+                }
+            }
+        }
+    }
+
+
+
     profiling::scope!("Instruction checking");
     let mut deleted_handles = HashSet::new();
     for Instruction { kind, location : _} in instructions. iter() {
         match kind {
-            InstructionKind::AddObject { handle, .. } => {
+            InstructionKind::AddObject { handle, object } => {
                 //  Must not add a deleted object in the same pass.
                 if deleted_handles.contains(&handle.idx) {
                     panic!("Add of deleted object of object handle #{}", handle.idx);
                 }
-                    
+                check_mesh_in_add_object(&deleted_handles, &object, &renderer.mesh_manager);                    
             }
             
             InstructionKind::DeleteObject { handle } => {
@@ -33,6 +55,12 @@ fn check_instructions(instructions: &Vec<Instruction>) {
                     panic!("Two deletes of object handle #{}", handle.idx);
                 }               
             }
+            
+            InstructionKind::DeleteMesh { handle } => {
+                if !deleted_handles.insert(handle.idx) {
+                    panic!("Two deletes of mesh handle #{}", handle.idx);
+                }       
+            }   
             
             _ => {}
         }     
@@ -44,7 +72,7 @@ pub fn evaluate_instructions(renderer: &Renderer) -> InstructionEvaluationOutput
 
     let mut instructions = renderer.instructions.consumer.lock();
     if CHECK_INSTRUCTIONS {
-        check_instructions(&instructions);   // debug trap
+        check_instructions(&renderer, &instructions);   // debug trap
     }
 
     // 16 encoders is a reasonable default
