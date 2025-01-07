@@ -19,45 +19,44 @@ fn check_instructions(renderer: &Renderer, instructions: &Vec<Instruction>) {
     use crate::managers::MeshManager;
     ///  Check that when we add an object, its mesh was not previously deleted.
     fn check_mesh_in_add_object(
-        deleted_handles: &HashSet<usize>,
+        deleted_mesh_handles: &HashSet<usize>,
         object: &Object,
         mesh_manager: &MeshManager,
     ) {
         let mesh_manager_guard = mesh_manager.lock_internal_data();    // performance problem
         match &object.mesh_kind {
-            ObjectMeshKind::Animated(_skeleton) => {} // no check
+            ObjectMeshKind::Animated(_skeleton) => {} // no check, because bug is in static meshes
             ObjectMeshKind::Static(mesh_handle) => {
                 let raw_mesh_handle = mesh_handle.get_raw();
-                if deleted_handles.contains(&raw_mesh_handle.idx) {
-                    panic!("Add of deleted mesh #{} at add object", raw_mesh_handle.idx);
+                if deleted_mesh_handles.contains(&raw_mesh_handle.idx) {
+                    panic!("Add of deleted mesh handle #{} at add object", raw_mesh_handle.idx);
                 }
             }
         }
     }
 
-
-
     profiling::scope!("Instruction checking");
-    let mut deleted_handles = HashSet::new();
+    let mut deleted_object_handles = HashSet::new();
+    let mut deleted_mesh_handles = HashSet::new();
     for Instruction { kind, location : _} in instructions. iter() {
         match kind {
             InstructionKind::AddObject { handle, object } => {
                 //  Must not add a deleted object in the same pass.
-                if deleted_handles.contains(&handle.idx) {
+                if deleted_object_handles.contains(&handle.idx) {
                     panic!("Add of deleted object of object handle #{}", handle.idx);
                 }
-                check_mesh_in_add_object(&deleted_handles, &object, &renderer.mesh_manager);                    
+                check_mesh_in_add_object(&deleted_mesh_handles, &object, &renderer.mesh_manager);                    
             }
             
             InstructionKind::DeleteObject { handle } => {
                 //  Track deleted object
-                if !deleted_handles.insert(handle.idx) {
+                if !deleted_object_handles.insert(handle.idx) {
                     panic!("Two deletes of object handle #{}", handle.idx);
                 }               
             }
             
             InstructionKind::DeleteMesh { handle } => {
-                if !deleted_handles.insert(handle.idx) {
+                if !deleted_mesh_handles.insert(handle.idx) {
                     panic!("Two deletes of mesh handle #{}", handle.idx);
                 }       
             }   
