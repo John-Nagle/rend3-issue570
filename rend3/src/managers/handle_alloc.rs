@@ -34,7 +34,8 @@ where
         let idx = maybe_idx.unwrap_or_else(|| self.max_allocated.fetch_add(1, Ordering::Relaxed));
 
         let renderer = Arc::clone(renderer);
-        let destroy_fn = move |handle: RawResourceHandle<T>| {
+        //  Note copy of raw resource handle. May result in resource handle outliving its index.
+        let destroy_fn = move |handle: &RawResourceHandle<T>| {
             renderer.instructions.push(handle.into_delete_instruction_kind(), *Location::caller())
         };
 

@@ -278,7 +278,7 @@ impl<T: 'static> TextureManager<T> {
         self.data[handle.idx].as_ref().unwrap()
     }
 
-    pub fn get_view(&self, handle: RawResourceHandle<T>) -> &TextureView {
+    pub fn get_view(&self, handle: &RawResourceHandle<T>) -> &TextureView {
         &self.data[handle.idx].as_ref().unwrap().view
     }
 

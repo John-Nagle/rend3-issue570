@@ -69,7 +69,7 @@ impl SkeletonManager {
         mesh_manager: &MeshManager,
         skeleton: Skeleton,
     ) -> Result<InternalSkeleton, SkeletonCreationError> {
-        let internal_mesh = &mesh_manager.lock_internal_data()[skeleton.mesh.get_raw()];
+        let internal_mesh = &mesh_manager.lock_internal_data()[*skeleton.mesh.get_raw()];
         let required_joint_count =
             internal_mesh.required_joint_count.ok_or(SkeletonCreationError::MissingAttributesJointIndices)?;
 

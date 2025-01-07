@@ -49,7 +49,9 @@ impl<T> Debug for RawResourceHandle<T> {
         f.debug_struct("RawResourceHandle").field("idx", &self.idx).finish()
     }
 }
-
+/// ***IT IS UNSAFE THAT THIS IS COPYABLE***
+/// This may result in a RawResourceHandle outliving the index entry to which it points.
+/// ***NEEDS WORK***
 impl<T> Copy for RawResourceHandle<T> {}
 
 impl<T> Clone for RawResourceHandle<T> {
@@ -93,15 +95,15 @@ struct ResourceHandleRefcount<T> {
     /// This needs a Box or Arc because the closure is a variable-sized object.
     /// Arc would be better if the callers generated an Arc, because it could be a cheap clone.
     #[cfg(not(target_arch = "wasm32"))]
-    deindexer: Box<dyn Fn(RawResourceHandle<T>) + Send + Sync + 'static>,
+    deindexer: Box<dyn Fn(&RawResourceHandle<T>) + Send + Sync + 'static>,
     #[cfg(target_arch = "wasm32")]
-    deindexer: Box<dyn Fn(RawResourceHandle<T>) + 'static>,
+    deindexer: Box<dyn Fn(&RawResourceHandle<T>) + 'static>,
 
 }
 
 impl<T> ResourceHandleRefcount<T> {
     /// Usual new fn
-    pub fn new(destroy_fn: impl Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static, idx: usize) -> Self {
+    pub fn new(destroy_fn: impl Fn(&RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static, idx: usize) -> Self {
         Self {
             deindexer: Box::new(destroy_fn),
             raw: RawResourceHandle { idx, _phantom: PhantomData },
@@ -109,15 +111,15 @@ impl<T> ResourceHandleRefcount<T> {
     }
     
     /// Get the raw resource handle
-    pub fn get_raw(&self) -> RawResourceHandle<T>{
-        self.raw
+    pub fn get_raw(&self) -> &RawResourceHandle<T>{
+        &self.raw
     }
 }
 
 impl<T> Drop for ResourceHandleRefcount<T> {
     /// When this is dropped, deindex.
     fn drop(&mut self) {
-        (self.deindexer)(self.raw);
+        (self.deindexer)(&self.raw);
     }
 }
 
@@ -192,7 +194,7 @@ impl<T> ResourceHandle<T> {
     /// Create a new resource handle from an index.
     ///
     /// Part of rend3's internal interface, use `Renderer::add_*` instead.
-    pub fn new(destroy_fn: impl Fn(RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static, idx: usize) -> Self {
+    pub fn new(destroy_fn: impl Fn(&RawResourceHandle<T>) + WasmNotSend + WasmNotSync + 'static, idx: usize) -> Self {
         Self {
             refcount: Arc::new(ResourceHandleRefcount::new(destroy_fn, idx)),
             //////refcount: Arc::new(destroy_fn),
@@ -204,8 +206,8 @@ impl<T> ResourceHandle<T> {
     /// Gets the equivalent raw handle for this owning handle.
     ///
     /// Part of rend3's internal interface for accessing internal resrouces
-    pub fn get_raw(&self) -> RawResourceHandle<T> {
-        self.refcount.raw
+    pub fn get_raw(&self) -> &RawResourceHandle<T> {
+        &self.refcount.raw
     }
 }
 
