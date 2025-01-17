@@ -38,6 +38,10 @@ fn check_instructions(renderer: &Renderer, instructions: &Vec<Instruction>) {
     profiling::scope!("Instruction checking");
     let mut deleted_object_handles = HashSet::new();
     let mut deleted_mesh_handles = HashSet::new();
+    //  Preallocate. 
+    deleted_object_handles.reserve(instructions.len());
+    deleted_mesh_handles.reserve(instructions.len());
+    //  Prescan instructions for problems.
     for Instruction { kind, location : _} in instructions. iter() {
         match kind {
             InstructionKind::AddObject { handle, object } => {
