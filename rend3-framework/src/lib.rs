@@ -11,9 +11,10 @@ use rend3_routine::base::BaseRenderGraph;
 use wgpu::{Instance, PresentMode, SurfaceError};
 use winit::{
     error::EventLoopError,
-    event::Event,
+    event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop, ActiveEventLoop},
-    window::{Window, WindowAttributes},
+    window::{Window, WindowAttributes, WindowId},
+    application::ApplicationHandler,
 };
 
 mod assets;
@@ -175,6 +176,138 @@ pub struct DefaultRoutines {
     pub tonemapping: Mutex<rend3_routine::tonemapping::TonemappingRoutine>,
 }
 
+/// Inner framework, required by winit's desire to become a framework.
+struct Rend3ApplicationHandler<'a> {
+    /// The "app"
+    app: u8,
+    ///  The "window"
+    window: &'a winit::window::Window,
+    /// Instance Adapter Device
+    iad: InstanceAdapterDevice,
+    /// Surface
+    surface: Option<Arc<wgpu::Surface<'a>>>,
+    /// Display format
+    format: TextureFormat,
+    /// Suspended
+    suspended: bool,
+    /// Renderer ref
+    renderer: &'a Arc<Renderer>,
+    /// Stored surface info. Local data
+    stored_surface_info: StoredSurfaceInfo,
+    /// Last user control mode
+    last_user_control_mode: ControlFlow,
+    /// Previous time
+    previous_time: web_time::Instant,
+
+}
+
+//  New Winit framework usage
+impl ApplicationHandler<_> for Rend3ApplicationHandler<'_> {
+    /// Resumed after suspend
+    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+    }
+    
+    /// Window event received
+    fn window_event(
+        &mut self,
+        event_loop: &ActiveEventLoop,
+        window_id: WindowId,
+        event: WindowEvent,
+    ) {
+    
+        let mut control_flow = event_loop.control_flow();
+        if let Some(suspend) =
+            handle_surface(&self.app, &self.window, &event, &self.iad.instance, &mut self.surface, &self.renderer, &mut self.stored_surface_info)
+        {
+            self.suspended = suspend;
+        }
+
+        // We move to Wait when we get suspended so we don't spin at 50k FPS.
+        match event {
+            Event::Suspended => {
+                control_flow = ControlFlow::Wait;
+            }
+            Event::Resumed => {
+                control_flow = self.last_user_control_mode;
+            }
+            _ => {}
+        }
+
+        // Close button was clicked, we should close.
+        if let winit::event::Event::WindowEvent { event: winit::event::WindowEvent::CloseRequested, .. } = event {
+            event_loop.exit();
+            return;
+        }
+        // We need to block all updates
+        if let Event::WindowEvent { window_id: _, event: winit::event::WindowEvent::RedrawRequested } = event {
+            if self.suspended {
+                return;
+            }
+            let Some(surface) = self.surface.as_ref() else {
+                return;
+            };
+            if self.stored_surface_info.requires_reconfigure {
+                rend3::configure_surface(
+                    surface,
+                    &self.renderer.device,
+                    self.format,
+                    self.stored_surface_info.size,
+                    self.stored_surface_info.present_mode,
+                );
+                self.stored_surface_info.requires_reconfigure = false;
+            }
+            let surface_texture = match surface.get_current_texture() {
+                Ok(texture) => texture,
+                Err(SurfaceError::Outdated) => {
+                    self.stored_surface_info.requires_reconfigure = true;
+                    return;
+                }
+                Err(SurfaceError::Timeout) => {
+                    return;
+                }
+                Err(SurfaceError::OutOfMemory | SurfaceError::Lost) => panic!("Surface OOM"),
+            };
+            let current_time = web_time::Instant::now();
+            let delta_t_seconds = (current_time - self.previous_time).as_secs_f32();
+            self.previous_time = current_time;
+            self.app.handle_redraw(RedrawContext {
+                window: Some(&self.window),
+                renderer: &self.renderer,
+                routines: &routines,
+                base_rendergraph: &base_rendergraph,
+                surface_texture: &surface_texture.texture,
+                resolution: self.stored_surface_info.size,
+                control_flow: &mut |c: ControlFlow| {
+                    control_flow = c;
+                    self.last_user_control_mode = c;
+                },
+                event_loop_window_target: Some(event_loop),
+                delta_t_seconds,
+            });
+
+            surface_texture.present();
+
+            app.handle_redraw_done(&self.window); // standard action is to redraw, but that can be overridden.
+        } else {
+            app.handle_event(
+                EventContext {
+                    window: Some(&self.window),
+                    renderer: &self.renderer,
+                    routines: &routines,
+                    base_rendergraph: &base_rendergraph,
+                    resolution: self.stored_surface_info.size,
+                    control_flow: &mut |c: ControlFlow| {
+                        control_flow = c;
+                        self.last_user_control_mode = c;
+                    },
+                    event_loop,
+                },
+                event,
+            );
+        }
+    }
+}
+
 pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_attributes: WindowAttributes) {
     app.register_logger();
     app.register_panic_hook();
@@ -268,9 +401,9 @@ pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_att
     cfg_if::cfg_if! {
         if #[cfg(target_arch = "wasm32")] {
             use winit::platform::web::EventLoopExtWebSys;
-            let event_loop_function = EventLoop::spawn;
+            let event_loop_function = EventLoop::spawn_app;
         } else {
-            let event_loop_function = EventLoop::run;
+            let event_loop_function = EventLoop::run_app;
         }
     }
 
