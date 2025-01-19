@@ -178,17 +178,21 @@ pub struct DefaultRoutines {
 
 /// Inner framework, required by winit's desire to become a framework.
 struct Rend3ApplicationHandler<'a> {
-    /// The "app"
-    app: u8,
+    /// The Rend3 framework "app", reference
+    app: &'a dyn App,
     ///  The "window"
-    window: &'a winit::window::Window,
+    window: &'a Arc<winit::window::Window>,
     /// Instance Adapter Device
     iad: InstanceAdapterDevice,
     /// Surface
     surface: Option<Arc<wgpu::Surface<'a>>>,
     /// Display format
     format: TextureFormat,
-    /// Suspended
+    /// Routines
+    routines: &'a Arc<DefaultRoutines>,
+    /// Base rendergraph
+    base_rendergraph: &'a BaseRenderGraph,
+    /// Computer is suspended - don't draw
     suspended: bool,
     /// Renderer ref
     renderer: &'a Arc<Renderer>,
@@ -202,7 +206,7 @@ struct Rend3ApplicationHandler<'a> {
 }
 
 //  New Winit framework usage
-impl ApplicationHandler<_> for Rend3ApplicationHandler<'_> {
+impl <T> ApplicationHandler<T> for Rend3ApplicationHandler<'_> {
     /// Resumed after suspend
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
     }
@@ -217,7 +221,7 @@ impl ApplicationHandler<_> for Rend3ApplicationHandler<'_> {
     
         let mut control_flow = event_loop.control_flow();
         if let Some(suspend) =
-            handle_surface(&self.app, &self.window, &event, &self.iad.instance, &mut self.surface, &self.renderer, &mut self.stored_surface_info)
+            handle_surface(self.app, self.window, &event, self.iad.instance, &mut self.surface, self.renderer, &mut self.stored_surface_info)
         {
             self.suspended = suspend;
         }
@@ -273,8 +277,8 @@ impl ApplicationHandler<_> for Rend3ApplicationHandler<'_> {
             self.app.handle_redraw(RedrawContext {
                 window: Some(&self.window),
                 renderer: &self.renderer,
-                routines: &routines,
-                base_rendergraph: &base_rendergraph,
+                routines: &self.routines,
+                base_rendergraph: self.base_rendergraph,
                 surface_texture: &surface_texture.texture,
                 resolution: self.stored_surface_info.size,
                 control_flow: &mut |c: ControlFlow| {
@@ -287,14 +291,14 @@ impl ApplicationHandler<_> for Rend3ApplicationHandler<'_> {
 
             surface_texture.present();
 
-            app.handle_redraw_done(&self.window); // standard action is to redraw, but that can be overridden.
+            self.app.handle_redraw_done(&self.window); // standard action is to redraw, but that can be overridden.
         } else {
-            app.handle_event(
+            self.app.handle_event(
                 EventContext {
                     window: Some(&self.window),
                     renderer: &self.renderer,
-                    routines: &routines,
-                    base_rendergraph: &base_rendergraph,
+                    routines: &self.routines,
+                    base_rendergraph: &self.base_rendergraph,
                     resolution: self.stored_surface_info.size,
                     control_flow: &mut |c: ControlFlow| {
                         control_flow = c;
