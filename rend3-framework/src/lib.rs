@@ -65,7 +65,7 @@ pub struct RedrawContext<'a> {
 
 pub trait App<T: 'static = ()> {
     /// The handedness of the coordinate system of the renderer.
-    const HANDEDNESS: Handedness;
+    //////const HANDEDNESS: Handedness;
 
     fn register_logger(&mut self) {
         #[cfg(target_arch = "wasm32")]
@@ -304,7 +304,7 @@ impl <T> ApplicationHandler<T> for Rend3ApplicationHandler<'_> {
                         control_flow = c;
                         self.last_user_control_mode = c;
                     },
-                    event_loop,
+                    event_loop_window_target: event_loop,
                 },
                 event,
             );
