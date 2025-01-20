@@ -177,9 +177,9 @@ pub struct DefaultRoutines {
 }
 
 /// Inner framework, required by winit's desire to become a framework.
-struct Rend3ApplicationHandler<'a> {
+struct Rend3ApplicationHandler<'a, T>{
     /// The Rend3 framework "app", reference
-    app: &'a dyn App,
+    app: &'a T,
     ///  The "window"
     window: &'a Arc<winit::window::Window>,
     /// Instance Adapter Device
@@ -206,9 +206,10 @@ struct Rend3ApplicationHandler<'a> {
 }
 
 //  New Winit framework usage
-impl <T> ApplicationHandler<T> for Rend3ApplicationHandler<'_> {
+impl ApplicationHandler<App> for Rend3ApplicationHandler<'_, App> {
     /// Resumed after suspend
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+        todo!();        // what do we do here?
     }
     
     /// Window event received
@@ -216,16 +217,17 @@ impl <T> ApplicationHandler<T> for Rend3ApplicationHandler<'_> {
         &mut self,
         event_loop: &ActiveEventLoop,
         window_id: WindowId,
-        event: WindowEvent,
+        window_event: WindowEvent,
     ) {
     
         let mut control_flow = event_loop.control_flow();
         if let Some(suspend) =
-            handle_surface(self.app, self.window, &event, self.iad.instance, &mut self.surface, self.renderer, &mut self.stored_surface_info)
+            handle_surface(self.app, self.window, 
+                &Event::WindowEvent { window_id, event: window_event }, &self.iad.instance, &mut self.surface, self.renderer, &mut self.stored_surface_info)
         {
             self.suspended = suspend;
         }
-
+/*
         // We move to Wait when we get suspended so we don't spin at 50k FPS.
         match event {
             Event::Suspended => {
@@ -236,14 +238,14 @@ impl <T> ApplicationHandler<T> for Rend3ApplicationHandler<'_> {
             }
             _ => {}
         }
-
+*/
         // Close button was clicked, we should close.
-        if let winit::event::Event::WindowEvent { event: winit::event::WindowEvent::CloseRequested, .. } = event {
+        if let WindowEvent::CloseRequested{ .. } = window_event {
             event_loop.exit();
             return;
         }
         // We need to block all updates
-        if let Event::WindowEvent { window_id: _, event: winit::event::WindowEvent::RedrawRequested } = event {
+        if let WindowEvent::RedrawRequested{ .. } = window_event {
             if self.suspended {
                 return;
             }
@@ -293,6 +295,7 @@ impl <T> ApplicationHandler<T> for Rend3ApplicationHandler<'_> {
 
             self.app.handle_redraw_done(&self.window); // standard action is to redraw, but that can be overridden.
         } else {
+            let event = Event::WindowEvent { window_id, event: window_event };  // have to construct outer event for existing functions
             self.app.handle_event(
                 EventContext {
                     window: Some(&self.window),
