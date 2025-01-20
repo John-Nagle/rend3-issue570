@@ -159,6 +159,9 @@ pub trait App<T: 'static = ()> {
     fn handle_redraw_done(&mut self, window: &Window) {
         window.request_redraw(); // just queue a redraw.
     }
+    
+    /// Get handedness. Can't put a constant in a trait.
+    fn get_handedness(&self) -> Handedness;
 }
 
 pub fn lock<T>(lock: &parking_lot::Mutex<T>) -> parking_lot::MutexGuard<'_, T> {
@@ -192,6 +195,8 @@ struct Rend3ApplicationHandler<'a, T>{
     routines: &'a Arc<DefaultRoutines>,
     /// Base rendergraph
     base_rendergraph: &'a BaseRenderGraph,
+    /// Left-handed or right-handed coordinate system?
+    handedness: Handedness,
     /// Computer is suspended - don't draw
     suspended: bool,
     /// Renderer ref
@@ -341,7 +346,7 @@ pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_att
 
     // Make us a renderer.
     let renderer =
-        rend3::Renderer::new(iad.clone(), A::HANDEDNESS, Some(window_size.width as f32 / window_size.height as f32))
+        rend3::Renderer::new(iad.clone(), app.get_handedness(), Some(window_size.width as f32 / window_size.height as f32))
             .unwrap();
 
     // Get the preferred format for the surface.
