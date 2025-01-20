@@ -179,7 +179,7 @@ pub struct DefaultRoutines {
 /// Inner framework, required by winit's desire to become a framework.
 struct Rend3ApplicationHandler<'a, T>{
     /// The Rend3 framework "app", reference
-    app: &'a T,
+    app: T,
     ///  The "window"
     window: &'a Arc<winit::window::Window>,
     /// Instance Adapter Device
@@ -205,8 +205,10 @@ struct Rend3ApplicationHandler<'a, T>{
 
 }
 
-//  New Winit framework usage
-impl ApplicationHandler<App> for Rend3ApplicationHandler<'_, App> {
+/// New Winit framework usage
+//  ***NEED MORE CALLBACK FNS*** device_event, etc.
+type AppRef<'a> = &'a mut dyn App;
+impl ApplicationHandler<dyn App> for Rend3ApplicationHandler<'_, AppRef<'_>> {
     /// Resumed after suspend
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         todo!();        // what do we do here?
@@ -223,7 +225,7 @@ impl ApplicationHandler<App> for Rend3ApplicationHandler<'_, App> {
         let mut control_flow = event_loop.control_flow();
         if let Some(suspend) =
             handle_surface(self.app, self.window, 
-                &Event::WindowEvent { window_id, event: window_event }, &self.iad.instance, &mut self.surface, self.renderer, &mut self.stored_surface_info)
+                &Event::WindowEvent { window_id, event: window_event.clone() }, &self.iad.instance, &mut self.surface, self.renderer, &mut self.stored_surface_info)
         {
             self.suspended = suspend;
         }
@@ -408,9 +410,9 @@ pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_att
     cfg_if::cfg_if! {
         if #[cfg(target_arch = "wasm32")] {
             use winit::platform::web::EventLoopExtWebSys;
-            let event_loop_function = EventLoop::spawn_app;
+            let event_loop_function = EventLoop::spawn;
         } else {
-            let event_loop_function = EventLoop::run_app;
+            let event_loop_function = EventLoop::run;
         }
     }
 
@@ -530,7 +532,7 @@ struct StoredSurfaceInfo {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn handle_surface<A: App<T>, T: 'static>(
+fn handle_surface<A: App<T>  + ?Sized, T: 'static>(
     app: &A,
     window: &Arc<Window>,
     event: &Event<T>,
