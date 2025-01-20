@@ -208,7 +208,7 @@ struct Rend3ApplicationHandler<'a, T>{
 /// New Winit framework usage
 //  ***NEED MORE CALLBACK FNS*** device_event, etc.
 type AppRef<'a> = &'a mut dyn App;
-impl ApplicationHandler<dyn App> for Rend3ApplicationHandler<'_, AppRef<'_>> {
+impl ApplicationHandler<AppRef<'static>> for Rend3ApplicationHandler<'_, AppRef<'_>> {
     /// Resumed after suspend
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         todo!();        // what do we do here?
