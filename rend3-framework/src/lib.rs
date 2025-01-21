@@ -181,7 +181,7 @@ struct Rend3ApplicationHandler<'a, T>{
     /// The Rend3 framework "app", reference
     app: T,
     ///  The "window"
-    window: &'a Arc<winit::window::Window>,
+    window: Arc<winit::window::Window>,
     /// Instance Adapter Device
     iad: InstanceAdapterDevice,
     /// Surface
@@ -189,13 +189,13 @@ struct Rend3ApplicationHandler<'a, T>{
     /// Display format
     format: TextureFormat,
     /// Routines
-    routines: &'a Arc<DefaultRoutines>,
+    routines: Arc<DefaultRoutines>,
     /// Base rendergraph
-    base_rendergraph: &'a BaseRenderGraph,
+    base_rendergraph: BaseRenderGraph,
     /// Computer is suspended - don't draw
     suspended: bool,
     /// Renderer ref
-    renderer: &'a Arc<Renderer>,
+    renderer: Arc<Renderer>,
     /// Stored surface info. Local data
     stored_surface_info: StoredSurfaceInfo,
     /// Last user control mode
@@ -203,6 +203,125 @@ struct Rend3ApplicationHandler<'a, T>{
     /// Previous time
     previous_time: web_time::Instant,
 
+}
+
+impl <T: App> Rend3ApplicationHandler<'_, T> {
+    /// Usual new
+    pub fn new(app: T, window_attributes: WindowAttributes) -> Self {
+        app.register_logger();
+        app.register_panic_hook();
+
+        // Create the window invisible until we are rendering
+        let (event_loop, window) = app.create_window(window_attributes.with_visible(false)).unwrap();
+        let window = Arc::new(window);
+        let window_size = window.inner_size();
+
+        let iad = app.create_iad().await.unwrap();
+
+        // The one line of unsafe needed. We just need to guarentee that the window
+        // outlives the use of the surface.
+        //
+        // Android has to defer the surface until `Resumed` is fired. This doesn't fire
+        // on other platforms though :|
+        let mut surface = if cfg!(target_os = "android") {
+            None
+        } else {
+            Some(Arc::new(iad.instance.create_surface(window.clone()).unwrap()))
+        };
+
+        const HANDEDNESS: Handedness = Handedness::Left;    // ***TEMP TEST*** needs to be a parameter
+        // Make us a renderer.
+        let renderer =
+            rend3::Renderer::new(iad.clone(), HANDEDNESS, Some(window_size.width as f32 / window_size.height as f32))
+                .unwrap();
+
+        // Get the preferred format for the surface.
+        //
+        // Assume android supports Rgba8Srgb, as it has 100% device coverage
+        let format = surface.as_ref().map_or(TextureFormat::Rgba8UnormSrgb, |s| {
+            let caps = s.get_capabilities(&iad.adapter);
+            let format = caps.formats[0];
+
+            // Configure the surface to be ready for rendering.
+            rend3::configure_surface(
+                s,
+                &iad.device,
+                format,
+                glam::UVec2::new(window_size.width, window_size.height),
+                rend3::types::PresentMode::Fifo,
+            );
+
+            format
+        });
+
+        let mut spp = rend3::ShaderPreProcessor::new();
+        rend3_routine::builtin_shaders(&mut spp);
+
+        let base_rendergraph = app.create_base_rendergraph(&renderer, &spp);
+        let mut data_core = renderer.data_core.lock();
+        let routines = Arc::new(DefaultRoutines {
+            pbr: Mutex::new(rend3_routine::pbr::PbrRoutine::new(
+                &renderer,
+                &mut data_core,
+                &spp,
+                &base_rendergraph.interfaces,
+            )),
+            skybox: Mutex::new(rend3_routine::skybox::SkyboxRoutine::new(&renderer, &spp, &base_rendergraph.interfaces)),
+            tonemapping: Mutex::new(rend3_routine::tonemapping::TonemappingRoutine::new(
+                &renderer,
+                &spp,
+                &base_rendergraph.interfaces,
+                format,
+            )),
+        });
+        drop(data_core);
+
+        app.setup(SetupContext {
+            windowing: Some(WindowingSetup { event_loop: &event_loop, window: &window }),
+            renderer: &renderer,
+            routines: &routines,
+            surface_format: format,
+            resolution: UVec2::new(window_size.width, window_size.height),
+            scale_factor: window.scale_factor() as f32,
+        });
+
+        // We're ready, so lets make things visible
+        window.set_visible(true);
+
+        let mut suspended = cfg!(target_os = "android");
+        let mut last_user_control_mode = ControlFlow::Wait;
+        let mut stored_surface_info = StoredSurfaceInfo {
+            size: glam::UVec2::new(window_size.width, window_size.height),
+            scale_factor: app.scale_factor(),
+            sample_count: app.sample_count(),
+            present_mode: app.present_mode(),
+            requires_reconfigure: true,
+        };
+
+        cfg_if::cfg_if! {
+            if #[cfg(target_arch = "wasm32")] {
+                use winit::platform::web::EventLoopExtWebSys;
+                let event_loop_function = EventLoop::spawn;
+            } else {
+            let event_loop_function = EventLoop::run;
+            }
+        }
+        let mut previous_time = web_time::Instant::now();
+        Self {
+            app, 
+            window,
+            iad,
+            surface,
+            format, 
+            base_rendergraph,
+            last_user_control_mode,
+            previous_time,
+            renderer,
+            routines,
+            stored_surface_info,
+            suspended,
+        }
+    }
 }
 
 /// New Winit framework usage
@@ -224,8 +343,8 @@ impl ApplicationHandler<AppRef<'static>> for Rend3ApplicationHandler<'_, AppRef<
     
         let mut control_flow = event_loop.control_flow();
         if let Some(suspend) =
-            handle_surface(self.app, self.window, 
-                &Event::WindowEvent { window_id, event: window_event.clone() }, &self.iad.instance, &mut self.surface, self.renderer, &mut self.stored_surface_info)
+            handle_surface(self.app, &self.window, 
+                &Event::WindowEvent { window_id, event: window_event.clone() }, &self.iad.instance, &mut self.surface, &self.renderer, &mut self.stored_surface_info)
         {
             self.suspended = suspend;
         }
@@ -282,7 +401,7 @@ impl ApplicationHandler<AppRef<'static>> for Rend3ApplicationHandler<'_, AppRef<
                 window: Some(&self.window),
                 renderer: &self.renderer,
                 routines: &self.routines,
-                base_rendergraph: self.base_rendergraph,
+                base_rendergraph: &self.base_rendergraph,
                 surface_texture: &surface_texture.texture,
                 resolution: self.stored_surface_info.size,
                 control_flow: &mut |c: ControlFlow| {
