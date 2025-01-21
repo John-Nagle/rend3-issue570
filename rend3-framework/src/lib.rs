@@ -16,6 +16,7 @@ use winit::{
     window::{Window, WindowAttributes, WindowId},
     application::ApplicationHandler,
 };
+use pollster::FutureExt;
 
 mod assets;
 mod grab;
@@ -207,7 +208,7 @@ struct Rend3ApplicationHandler<'a, T>{
 
 impl <T: App> Rend3ApplicationHandler<'_, T> {
     /// Usual new
-    pub fn new(app: T, window_attributes: WindowAttributes) -> Self {
+    pub fn new(mut app: T, window_attributes: WindowAttributes) -> Self {
         app.register_logger();
         app.register_panic_hook();
 
@@ -216,7 +217,11 @@ impl <T: App> Rend3ApplicationHandler<'_, T> {
         let window = Arc::new(window);
         let window_size = window.inner_size();
 
-        let iad = app.create_iad().await.unwrap();
+        //////let iad = app.create_iad().await.unwrap();
+        
+        let iad = async {
+            app.create_iad().await.unwrap()
+        }.block_on();
 
         // The one line of unsafe needed. We just need to guarentee that the window
         // outlives the use of the surface.
@@ -297,7 +302,7 @@ impl <T: App> Rend3ApplicationHandler<'_, T> {
             present_mode: app.present_mode(),
             requires_reconfigure: true,
         };
-
+/*
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
                 use winit::platform::web::EventLoopExtWebSys;
@@ -306,6 +311,7 @@ impl <T: App> Rend3ApplicationHandler<'_, T> {
             let event_loop_function = EventLoop::run;
             }
         }
+*/
         let mut previous_time = web_time::Instant::now();
         Self {
             app, 
