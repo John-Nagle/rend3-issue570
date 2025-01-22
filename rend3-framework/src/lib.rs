@@ -218,7 +218,7 @@ impl <T: App> Rend3ApplicationHandler<'_, T> {
         let window_size = window.inner_size();
 
         //////let iad = app.create_iad().await.unwrap();
-        
+        //  This is silly, but, for some reason, create_iad is async.
         let iad = async {
             app.create_iad().await.unwrap()
         }.block_on();
