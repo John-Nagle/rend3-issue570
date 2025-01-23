@@ -163,10 +163,8 @@ pub trait App<T: 'static = ()> {
     
     /// Left handed or right handed coordinate system?
     /// Trait implementation can override.
-    /// Left handed by default.
-    fn get_handedness(&self) -> Handedness{
-        Handedness::Left    // default
-    }
+    /// Must be overridden.
+    fn get_handedness(&self) -> Handedness;
 }
 
 pub fn lock<T>(lock: &parking_lot::Mutex<T>) -> parking_lot::MutexGuard<'_, T> {
