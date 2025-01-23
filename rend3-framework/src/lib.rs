@@ -454,18 +454,51 @@ impl ApplicationHandler<AppRef<'static>> for Rend3ApplicationHandler<'_, AppRef<
         todo!();
     }
 */
-    
+    /// Device event. Winit fans these out, we put them back together, Rend3 framework fans them out.
     fn device_event(
         &mut self,
         event_loop: &ActiveEventLoop,
         device_id: DeviceId,
         event: DeviceEvent,
     ) {
-        todo!();
+        let event = Event::DeviceEvent { device_id, event };  // have to construct outer event for existing functions
+        let mut control_flow = event_loop.control_flow();
+        self.app.handle_event(
+                EventContext {
+                    window: Some(&self.window),
+                    renderer: &self.renderer,
+                    routines: &self.routines,
+                    base_rendergraph: &self.base_rendergraph,
+                    resolution: self.stored_surface_info.size,
+                    control_flow: &mut |c: ControlFlow| {
+                        control_flow = c;
+                        self.last_user_control_mode = c;
+                    },
+                    event_loop_window_target: event_loop,
+                },
+                event,
+            );
     }
     
+    /// About to wait event. Pass to common fn.
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
-        todo!();
+        let event = Event::AboutToWait{ };  // have to construct outer event for existing functions
+        let mut control_flow = event_loop.control_flow();
+        self.app.handle_event(
+                EventContext {
+                    window: Some(&self.window),
+                    renderer: &self.renderer,
+                    routines: &self.routines,
+                    base_rendergraph: &self.base_rendergraph,
+                    resolution: self.stored_surface_info.size,
+                    control_flow: &mut |c: ControlFlow| {
+                        control_flow = c;
+                        self.last_user_control_mode = c;
+                    },
+                    event_loop_window_target: event_loop,
+                },
+                event,
+            );
     }
     
     
