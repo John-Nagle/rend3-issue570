@@ -34,7 +34,11 @@ fn update(renderer: &rend3::Renderer, delta: f32, animated_object: &mut Animated
 }
 
 impl rend3_framework::App for AnimationExample {
-    const HANDEDNESS: rend3::types::Handedness = rend3::types::Handedness::Left;
+    /// Set handedness of coordinate system
+    fn get_handedness(&self) -> rend3::types::Handedness {
+        rend3::types::Handedness::Left    // default
+    }
+
 
     fn sample_count(&self) -> rend3::types::SampleCount {
         SAMPLE_COUNT

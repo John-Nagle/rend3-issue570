@@ -17,7 +17,11 @@ struct EguiExample {
     rust_logo: egui::TextureId,
 }
 impl rend3_framework::App for EguiExample {
-    const HANDEDNESS: rend3::types::Handedness = rend3::types::Handedness::Left;
+    /// Set handedness of coordinate system
+    fn get_handedness(&self) -> rend3::types::Handedness {
+        rend3::types::Handedness::Left    // default
+    }
+
 
     fn sample_count(&self) -> rend3::types::SampleCount {
         SAMPLE_COUNT

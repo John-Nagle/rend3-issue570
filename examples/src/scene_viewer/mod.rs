@@ -432,7 +432,11 @@ impl SceneViewer {
     }
 }
 impl rend3_framework::App for SceneViewer {
-    const HANDEDNESS: rend3::types::Handedness = rend3::types::Handedness::Right;
+    /// Set handedness of coordinate system
+    fn get_handedness(&self) -> rend3::types::Handedness {
+        rend3::types::Handedness::Right    // Unlike the other examples, scene_viewer is right-handed.
+    }
+
 
     fn create_iad<'a>(
         &'a mut self,

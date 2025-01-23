@@ -49,7 +49,10 @@ struct StaticGltfExample {
 }
 
 impl rend3_framework::App for StaticGltfExample {
-    const HANDEDNESS: rend3::types::Handedness = rend3::types::Handedness::Left;
+    /// Set handedness of coordinate system
+    fn get_handedness(&self) -> rend3::types::Handedness {
+        rend3::types::Handedness::Left    // default
+    }
 
     fn sample_count(&self) -> rend3::types::SampleCount {
         SAMPLE_COUNT
