@@ -11,7 +11,7 @@ use rend3_routine::base::BaseRenderGraph;
 use wgpu::{Instance, PresentMode, SurfaceError};
 use winit::{
     error::EventLoopError,
-    event::{Event, WindowEvent},
+    event::{Event, WindowEvent, StartCause, DeviceEvent, DeviceId},
     event_loop::{ControlFlow, EventLoop, ActiveEventLoop},
     window::{Window, WindowAttributes, WindowId},
     application::ApplicationHandler,
@@ -443,6 +443,42 @@ impl ApplicationHandler<AppRef<'static>> for Rend3ApplicationHandler<'_, AppRef<
                 event,
             );
         }
+    }
+    
+    // Provided methods
+    fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
+        todo!();
+    }
+/* ***TEMP*** type parameter to this needs work.    
+    fn user_event(&mut self, event_loop: &ActiveEventLoop, event: T) {
+        todo!();
+    }
+*/
+    
+    fn device_event(
+        &mut self,
+        event_loop: &ActiveEventLoop,
+        device_id: DeviceId,
+        event: DeviceEvent,
+    ) {
+        todo!();
+    }
+    
+    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        todo!();
+    }
+    
+    
+    fn suspended(&mut self, event_loop: &ActiveEventLoop) {
+        todo!();
+    }
+    
+    fn exiting(&mut self, event_loop: &ActiveEventLoop) {
+        todo!();
+    }
+    
+    fn memory_warning(&mut self, event_loop: &ActiveEventLoop) {
+        todo!();
     }
 }
 
