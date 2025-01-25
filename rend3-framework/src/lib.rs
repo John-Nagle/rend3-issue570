@@ -338,7 +338,7 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
 /// New Winit framework usage
 //  ***NEED MORE CALLBACK FNS*** device_event, etc.
 //////type AppRef<'a> = &'a mut dyn App;
-impl<T: 'static> ApplicationHandler for Rend3ApplicationHandler<'_,T> {
+impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
     /// Resumed after suspend
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         todo!();        // what do we do here?
@@ -450,11 +450,10 @@ impl<T: 'static> ApplicationHandler for Rend3ApplicationHandler<'_,T> {
     fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
         todo!();
     }
-/* ***TEMP*** type parameter to this needs work.    
     fn user_event(&mut self, event_loop: &ActiveEventLoop, event: T) {
         todo!();
     }
-*/
+
     /// Device event. Winit fans these out, we put them back together, Rend3 framework fans them out.
     fn device_event(
         &mut self,
