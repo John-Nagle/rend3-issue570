@@ -183,9 +183,9 @@ pub struct DefaultRoutines {
 }
 
 /// Inner framework, required by winit's desire to become a framework.
-struct Rend3ApplicationHandler<'a, T>{
+struct Rend3ApplicationHandler<'a, T: 'static>{
     /// The Rend3 framework "app", reference
-    app: T,
+    app: &'a mut dyn App<T>,
     ///  The "window"
     window: Arc<winit::window::Window>,
     /// Instance Adapter Device
@@ -211,9 +211,10 @@ struct Rend3ApplicationHandler<'a, T>{
 
 }
 
-impl <T: App> Rend3ApplicationHandler<'_, T> {
+impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
     /// Usual new
-    pub fn new(mut app: T, window_attributes: WindowAttributes) -> Self {
+    //////pub fn new(app: &mut dyn App<T>, window_attributes: WindowAttributes) -> Self {
+    pub fn new(app: &'a mut dyn App<T>, window_attributes: WindowAttributes) -> Self {
         app.register_logger();
         app.register_panic_hook();
 
@@ -336,8 +337,8 @@ impl <T: App> Rend3ApplicationHandler<'_, T> {
 
 /// New Winit framework usage
 //  ***NEED MORE CALLBACK FNS*** device_event, etc.
-type AppRef<'a> = &'a mut dyn App;
-impl ApplicationHandler<AppRef<'static>> for Rend3ApplicationHandler<'_, AppRef<'_>> {
+//////type AppRef<'a> = &'a mut dyn App;
+impl<T: 'static> ApplicationHandler for Rend3ApplicationHandler<'_,T> {
     /// Resumed after suspend
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         todo!();        // what do we do here?
