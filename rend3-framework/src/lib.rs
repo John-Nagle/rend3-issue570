@@ -346,7 +346,7 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
 impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
     /// Resumed after suspend
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        todo!();        // what do we do here?
+        return; ///// todo!();        // what do we do here?
     }
     
     /// Window event received
@@ -453,7 +453,7 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
     
     // Provided methods
     fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
-        todo!();
+        return; ///// todo!();
     }
     fn user_event(&mut self, event_loop: &ActiveEventLoop, event: T) {
         todo!();
@@ -997,6 +997,7 @@ fn handle_surface<A: App<T>  + ?Sized, T: 'static>(
 }
 
 pub fn start<A: App<T> + 'static, T: 'static>(app: A, window_attributes: WindowAttributes) {
+    const USE_APP_FORM: bool = true; // ***TEMP*** testing new form
     #[cfg(target_arch = "wasm32")]
     {
         wasm_bindgen_futures::spawn_local(async_start(app, window_attributes));
@@ -1004,6 +1005,10 @@ pub fn start<A: App<T> + 'static, T: 'static>(app: A, window_attributes: WindowA
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        pollster::block_on(async_start(app, window_attributes));
+        if USE_APP_FORM {
+            pollster::block_on(async_start_new(app, window_attributes));
+        } else {   
+            pollster::block_on(async_start_new(app, window_attributes));
+        }
     }
 }
