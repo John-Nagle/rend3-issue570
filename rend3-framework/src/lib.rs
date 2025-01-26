@@ -212,9 +212,8 @@ struct Rend3ApplicationHandler<'a, T: 'static>{
 }
 
 impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
-    /// Usual new
-    //////pub fn new(app: &mut dyn App<T>, window_attributes: WindowAttributes) -> Self {
-    pub fn new(app: &'a mut dyn App<T>, window_attributes: WindowAttributes) -> Self {
+    /// Usual new. Also returns the event loop as a separate item.
+    pub fn new(app: &'a mut dyn App<T>, window_attributes: WindowAttributes) -> (Self, EventLoop<T>) {
         app.register_logger();
         app.register_panic_hook();
 
@@ -307,19 +306,10 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
             present_mode: app.present_mode(),
             requires_reconfigure: true,
         };
-/*
-        cfg_if::cfg_if! {
-            if #[cfg(target_arch = "wasm32")] {
-                use winit::platform::web::EventLoopExtWebSys;
-                let event_loop_function = EventLoop::spawn;
-            } else {
-            let event_loop_function = EventLoop::run;
-            }
-        }
-*/
+
         let mut previous_time = web_time::Instant::now();
-        Self {
-            app, 
+        let new_item = Self {
+            app,
             window,
             iad,
             surface,
@@ -331,7 +321,24 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
             routines,
             stored_surface_info,
             suspended,
+        };
+        (new_item, event_loop)  //  Need these as separate items to avoid borrow clash
+    }
+    
+    /// Actually run the event loop.
+    /// This is where all the time goes.
+    fn run(&mut self, event_loop: EventLoop<T>) {
+        //  Platform specific setup
+        cfg_if::cfg_if! {
+            if #[cfg(target_arch = "wasm32")] {
+                use winit::platform::web::EventLoopExtWebSys;
+                let event_loop_function = EventLoop::spawn_app;
+            } else {
+                let event_loop_function = EventLoop::run_app;
+            }
         }
+        //  Run the event loop
+        let _ = (event_loop_function)(event_loop, self);
     }
 }
 
@@ -727,8 +734,9 @@ pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_att
 /// On other platforms it's blocked immediately on return.
 pub async fn async_start_new<A: App<T> + 'static, T: 'static>(mut app: A, window_attributes: WindowAttributes) {
     //  Setup phase
-    let mut application_handler = Rend3ApplicationHandler::new(&mut app, window_attributes);
-    // ***MORE***
+    let (mut application_handler, mut event_loop) = Rend3ApplicationHandler::new(&mut app, window_attributes);
+    // Run the application
+    application_handler.run(event_loop);
 /*
     app.register_logger();
     app.register_panic_hook();
