@@ -143,6 +143,14 @@ pub trait App<T: 'static = ()> {
     fn setup(&mut self, context: SetupContext<'_, T>) {
         let _ = context;
     }
+    
+    /// Handle all events.
+    /// This is called in addition to the more specific event functions.
+    /// "This is a useful place to put code that should be done before
+    /// you start processing events" - Winit
+    fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
+        //  default is nothing, can be overridden.
+    }
 
     /// Handle a non-redraw event.
     fn handle_event(&mut self, context: EventContext, event: Event<T>) {
@@ -340,6 +348,31 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
         //  Run the event loop
         let _ = (event_loop_function)(event_loop, self);
     }
+    
+    /// Pass event through to handle_event at App level.
+    ///
+    /// Winit's event loop fans out events by type, and then we put them
+    /// back into the common Event type and pass them to Rend3's event loop.
+    /// This is the price of having nested event loops in Rend3 and Winit.
+    fn pass_through_event(&mut self, event_loop: &ActiveEventLoop, event: Event<T>) {
+        let mut control_flow = event_loop.control_flow();
+        self.app.handle_event(
+                EventContext {
+                    window: Some(&self.window),
+                    renderer: &self.renderer,
+                    routines: &self.routines,
+                    base_rendergraph: &self.base_rendergraph,
+                    resolution: self.stored_surface_info.size,
+                    control_flow: &mut |c: ControlFlow| {
+                        control_flow = c;
+                        self.last_user_control_mode = c;
+                    },
+                    event_loop_window_target: event_loop,
+                },
+                event,
+            );
+    }
+
 }
 
 /// New Winit framework usage
@@ -433,6 +466,8 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
             self.app.handle_redraw_done(&self.window); // standard action is to redraw, but that can be overridden.
         } else {
             let event = Event::WindowEvent { window_id, event: window_event };  // have to construct outer event for existing functions
+            self.pass_through_event(event_loop, event);    // pass up to Rend3 level
+/*
             self.app.handle_event(
                 EventContext {
                     window: Some(&self.window),
@@ -448,17 +483,19 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
                 },
                 event,
             );
+*/
         }
     }
     
     // Provided methods
     fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
-        return; ///// todo!();
+        self.app.new_events(event_loop, cause);
+        ////return; ///// todo!();
     }
     fn user_event(&mut self, event_loop: &ActiveEventLoop, event: T) {
         todo!();
     }
-
+    
     /// Device event. Winit fans these out, we put them back together, Rend3 framework fans them out.
     fn device_event(
         &mut self,
@@ -468,6 +505,8 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
     ) {
         let event = Event::DeviceEvent { device_id, event };  // have to construct outer event for existing functions
         let mut control_flow = event_loop.control_flow();
+        self.pass_through_event(event_loop, event);    // pass up to Rend3 level
+/*
         self.app.handle_event(
                 EventContext {
                     window: Some(&self.window),
@@ -483,12 +522,15 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
                 },
                 event,
             );
+*/
     }
     
     /// About to wait event. Pass to common fn.
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         let event = Event::AboutToWait{ };  // have to construct outer event for existing functions
         let mut control_flow = event_loop.control_flow();
+        self.pass_through_event(event_loop, event);    // pass up to Rend3 level
+/*
         self.app.handle_event(
                 EventContext {
                     window: Some(&self.window),
@@ -504,6 +546,7 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
                 },
                 event,
             );
+*/
     }
     
     
