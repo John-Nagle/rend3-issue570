@@ -377,6 +377,11 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
 
 /// New Winit framework usage
 impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
+
+    /// Suspended
+    fn suspended(&mut self, event_loop: &ActiveEventLoop) {
+        todo!();
+    }
     /// Resumed after suspend
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         return; ///// todo!();        // what do we do here?
@@ -547,11 +552,6 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
                 event,
             );
 */
-    }
-    
-    
-    fn suspended(&mut self, event_loop: &ActiveEventLoop) {
-        todo!();
     }
     
     /// Exiting - pass through to Rend3 level
