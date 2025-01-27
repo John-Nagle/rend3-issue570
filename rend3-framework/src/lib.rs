@@ -554,12 +554,18 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
         todo!();
     }
     
+    /// Exiting - pass through to Rend3 level
     fn exiting(&mut self, event_loop: &ActiveEventLoop) {
-        todo!();
+        let event = Event::LoopExiting{ };  // have to construct outer event for existing functions
+        let mut control_flow = event_loop.control_flow();
+        self.pass_through_event(event_loop, event);    // pass up to Rend3 level
     }
     
+    /// Memory warning - pass through to Rend3 level
     fn memory_warning(&mut self, event_loop: &ActiveEventLoop) {
-        todo!();
+        let event = Event::MemoryWarning{ };  // have to construct outer event for existing functions
+        let mut control_flow = event_loop.control_flow();
+        self.pass_through_event(event_loop, event);    // pass up to Rend3 level
     }
 }
 
