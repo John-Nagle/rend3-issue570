@@ -148,14 +148,14 @@ pub trait App<T: 'static = ()> {
     /// This is called in addition to the more specific event functions.
     /// "This is a useful place to put code that should be done before
     /// you start processing events" - Winit
-    fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
+    fn new_events(&mut self, _event_loop: &ActiveEventLoop, _cause: StartCause) {
         //  default is ignore, can be overridden.
     }
     
     /// Winit-level user event.
     /// New feature allows putting program-generated events on the main event queue.
     /// Can be overridden by the application if desired.
-    fn user_event(&mut self, event_loop: &ActiveEventLoop, event: T) {
+    fn user_event(&mut self, _event_loop: &ActiveEventLoop, _event: T) {
         //  Default is ignore
     }
 
@@ -248,7 +248,7 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
         //
         // Android has to defer the surface until `Resumed` is fired. This doesn't fire
         // on other platforms though :|
-        let mut surface = if cfg!(target_os = "android") {
+        let surface = if cfg!(target_os = "android") {
             None
         } else {
             Some(Arc::new(iad.instance.create_surface(window.clone()).unwrap()))
@@ -312,9 +312,9 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
         // We're ready, so lets make things visible
         window.set_visible(true);
 
-        let mut suspended = cfg!(target_os = "android");
-        let mut last_user_control_mode = ControlFlow::Wait;
-        let mut stored_surface_info = StoredSurfaceInfo {
+        let suspended = cfg!(target_os = "android");
+        let last_user_control_mode = ControlFlow::Wait;
+        let stored_surface_info = StoredSurfaceInfo {
             size: glam::UVec2::new(window_size.width, window_size.height),
             scale_factor: app.scale_factor(),
             sample_count: app.sample_count(),
@@ -322,7 +322,7 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
             requires_reconfigure: true,
         };
 
-        let mut previous_time = web_time::Instant::now();
+        let previous_time = web_time::Instant::now();
         let new_item = Self {
             app,
             window,
@@ -386,12 +386,22 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
 impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
 
     /// Program suspended
+    //  ***UNTESTED***
     fn suspended(&mut self, event_loop: &ActiveEventLoop) {
-        todo!();                        // what do we do here?
+        event_loop.set_control_flow(ControlFlow::Wait); // not sure about this
+        self.suspended = true;
+        let event = Event::Suspended {};
+        self.pass_through_event(event_loop, event);    // pass up to Rend3 level
+        
     }
     /// Program resumed after suspend
+    //  ***UNTESTED***
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        return; ///// todo!();        // what do we do here?
+        event_loop.set_control_flow(ControlFlow::Poll); // not sure about this. 
+        self.suspended = false;     // ***NEEDS TESTING***
+        self.suspended = true;
+        let event = Event::Resumed {};
+        self.pass_through_event(event_loop, event);    // pass up to Rend3 level
     }
     
     /// Window event received
@@ -502,28 +512,24 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
         event: DeviceEvent,
     ) {
         let event = Event::DeviceEvent { device_id, event };  // have to construct outer event for existing functions
-        let mut control_flow = event_loop.control_flow();
         self.pass_through_event(event_loop, event);    // pass up to Rend3 level
     }
     
     /// About to wait event. Pass to common fn.
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         let event = Event::AboutToWait{ };  // have to construct outer event for existing functions
-        let mut control_flow = event_loop.control_flow();
         self.pass_through_event(event_loop, event);    // pass up to Rend3 level
     }
     
     /// Exiting - pass through to Rend3 level
     fn exiting(&mut self, event_loop: &ActiveEventLoop) {
         let event = Event::LoopExiting{ };  // have to construct outer event for existing functions
-        let mut control_flow = event_loop.control_flow();
         self.pass_through_event(event_loop, event);    // pass up to Rend3 level
     }
     
     /// Memory warning - pass through to Rend3 level
     fn memory_warning(&mut self, event_loop: &ActiveEventLoop) {
         let event = Event::MemoryWarning{ };  // have to construct outer event for existing functions
-        let mut control_flow = event_loop.control_flow();
         self.pass_through_event(event_loop, event);    // pass up to Rend3 level
     }
 }
@@ -742,7 +748,7 @@ pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_att
 /// On other platforms it's blocked immediately on return.
 pub async fn async_start_new<A: App<T> + 'static, T: 'static>(mut app: A, window_attributes: WindowAttributes) {
     //  Setup phase
-    let (mut application_handler, mut event_loop) = Rend3ApplicationHandler::new(&mut app, window_attributes);
+    let (mut application_handler, event_loop) = Rend3ApplicationHandler::new(&mut app, window_attributes);
     // Run the application
     application_handler.run(event_loop);
 }
