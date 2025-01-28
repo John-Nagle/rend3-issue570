@@ -12,6 +12,9 @@ members = [
     "rend3-types",
 ]
 
+[workspace.package]
+version = "0.24.1"
+
 [profile.ci]
 inherits = "dev"
 debug = false

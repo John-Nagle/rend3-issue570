@@ -1,6 +1,6 @@
 [package]
 name = "rend3-routine"
-version = "0.23.1"
+version.workspace = true
 authors = ["The rend3 Developers"]
 edition = "2021"
 description = "Customizable Render Routines for the rend3 rendering library."
@@ -24,7 +24,7 @@ naga = { version = "22.1", features = ["wgsl-in"] }
 ordered-float = "4"
 parking_lot = "0.12"
 profiling = {version = "1", default-features = false }
-rend3 = { version = "^0.23.0", path = "../rend3" }
+rend3 = { path = "../rend3" }
 rust-embed = { version = "8", features = ["interpolate-folder-path"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

@@ -66,7 +66,6 @@ pub struct RedrawContext<'a> {
 
 pub trait App<T: 'static = ()> {
     /// The handedness of the coordinate system of the renderer.
-    //////const HANDEDNESS: Handedness;
 
     fn register_logger(&mut self) {
         #[cfg(target_arch = "wasm32")]
@@ -90,7 +89,6 @@ pub trait App<T: 'static = ()> {
         profiling::scope!("creating window");
 
         let event_loop = EventLoop::with_user_event().build()?;
-        //////let window = builder.build(&event_loop).expect("Could not build window");
         let window = event_loop.create_window(window_attributes).expect("Could not build window"); // (JN) for winit 0.30
 
         #[cfg(target_arch = "wasm32")]
@@ -237,7 +235,6 @@ impl <'a, T: 'static> Rend3ApplicationHandler<'a, T> {
         let window = Arc::new(window);
         let window_size = window.inner_size();
 
-        //////let iad = app.create_iad().await.unwrap();
         //  This is silly, but, for some reason, create_iad is async.
         let iad = async {
             app.create_iad().await.unwrap()
