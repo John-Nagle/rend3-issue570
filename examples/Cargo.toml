@@ -68,9 +68,9 @@ web-time = "1.1"
 # windowing
 winit = "0.30"
 # Integration with wgpu
-wgpu = "23.0"
+wgpu = { workspace = true }
 # Profiling with wgpu
-wgpu-profiler = "0.19"
+wgpu-profiler = { workspace = true }
 tracy-client = { version = "0.17", optional=true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

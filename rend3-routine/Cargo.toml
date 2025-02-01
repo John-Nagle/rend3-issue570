@@ -28,5 +28,5 @@ rend3 = { path = "../rend3" }
 rust-embed = { version = "8", features = ["interpolate-folder-path"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-wgpu = "23.0"
-wgpu-profiler = "0.19"
+wgpu = { workspace = true }
+wgpu-profiler = { workspace = true }

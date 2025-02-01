@@ -20,4 +20,5 @@ glam = { version = "0.28", features = ["bytemuck"] }
 list-any = "0.2"
 once_cell = "1"
 thiserror = "1"
-wgt = { package = "wgpu-types", version = "23.0" }
+wgpu-types = { workspace = true }
+wgt = { package = "wgpu-types", version = "*" }

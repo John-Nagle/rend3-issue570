@@ -13,7 +13,12 @@ members = [
 ]
 
 [workspace.package]
-version = "0.24.1"
+version = "0.24.2"
+
+[workspace.dependencies]
+wgpu = "^24.0.1"
+wgpu-types = "^24.0.0"
+wgpu-profiler = "^0.21.0"
 
 [profile.ci]
 inherits = "dev"

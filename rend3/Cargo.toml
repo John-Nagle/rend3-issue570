@@ -58,8 +58,8 @@ serde = { version = "1", features = ["derive"] }
 smallvec = "1"
 smartstring = "1.0"
 thiserror = "1"
-wgpu = "23.0"
-wgpu-profiler = "0.19"
+wgpu = { workspace = true }
+wgpu-profiler = { workspace = true }
 
 [dev-dependencies]
 pollster = "0.3"

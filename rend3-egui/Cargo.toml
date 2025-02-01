@@ -16,5 +16,5 @@ egui = "0.30"
 egui-wgpu = "0.30"
 glam = "0.28"
 rend3 = { path = "../rend3" }
-wgpu = "23.0"
-wgpu-types = "23.0"
+wgpu = { workspace = true }
+wgpu-types = { workspace = true }

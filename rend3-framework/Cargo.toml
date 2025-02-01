@@ -23,7 +23,7 @@ rend3-routine = { path = "../rend3-routine" }
 thiserror = { version = "1" }
 web-time = "1.1"
 winit = { version = "0.30" }
-wgpu = "23.0"
+wgpu = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # logging
