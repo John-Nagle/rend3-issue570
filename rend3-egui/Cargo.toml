@@ -13,8 +13,9 @@ rust-version = "1.71"
 
 [dependencies]
 egui = "0.30"
-egui-wgpu = "0.30"
-glam = "0.28"
+###### egui-wgpu = "0.30"
+# ***TEMP*** patch because Github and crates.io are out of sync
+egui-wgpu = { git = "https://github.com/emilk/egui.git", version = "0.30"  }
 rend3 = { path = "../rend3" }
 wgpu = { workspace = true }
 wgpu-types = { workspace = true }

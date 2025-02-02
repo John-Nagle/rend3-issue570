@@ -317,6 +317,7 @@ macro_rules! changeable_struct {
 
 // WGPU REEXPORTS
 #[doc(inline)]
+pub use wgpu_types as wgt;
 pub use wgt::{
     AstcBlock, AstcChannel, Backend, Backends, Color, DeviceType, PresentMode, TextureFormat,
     TextureFormatFeatureFlags, TextureUsages,
