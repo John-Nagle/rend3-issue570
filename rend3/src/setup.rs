@@ -466,8 +466,12 @@ pub async fn create_iad(
 
     let instance = Instance::new(&wgpu::InstanceDescriptor {
         backends: backend_bits,
-        dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
-        gles_minor_version: Gles3MinorVersion::default(),
+        //////dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
+        //////gles_minor_version: Gles3MinorVersion::default(),
+        backend_options: wgpu::BackendOptions { // per refactoring at WGPU
+            gl: wgpu::GlBackendOptions { gles_minor_version: Gles3MinorVersion::default()},
+            dx12: wgpu::Dx12BackendOptions { shader_compiler: wgpu::Dx12Compiler::Fxc, },
+        },
         flags: InstanceFlags::default(),
     });
 
