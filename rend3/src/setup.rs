@@ -464,7 +464,7 @@ pub async fn create_iad(
     #[cfg(target_arch = "wasm32")]
     let default_backend_order = [Backend::BrowserWebGpu];
 
-    let instance = Instance::new(wgpu::InstanceDescriptor {
+    let instance = Instance::new(&wgpu::InstanceDescriptor {
         backends: backend_bits,
         dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
         gles_minor_version: Gles3MinorVersion::default(),
