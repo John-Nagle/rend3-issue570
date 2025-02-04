@@ -16,9 +16,9 @@ arrayvec = "0.7"
 bitflags = "2"
 bytemuck = "1"
 codespan-reporting = "0.11"
-encase = { version = "0.9", features = ["glam"] }
+encase = { version = "0.10", features = ["glam"] }
 flume = "0.11"
-glam = { version = "0.28", features = ["bytemuck"] }
+glam = { workspace = true, features = ["bytemuck"] }
 log = "0.4"
 naga = { version = "22.1", features = ["wgsl-in"] }
 ordered-float = "4"

@@ -5,7 +5,7 @@ use thiserror::Error;
 use wgpu::{
     util::DeviceExt, BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout, BindGroupLayoutDescriptor,
     BindGroupLayoutEntry, BindingResource, BindingType, CommandBuffer, CommandEncoder, CommandEncoderDescriptor,
-    Device, Extent3d, Features, ImageCopyTexture, ImageDataLayout, Origin3d, ShaderStages, Texture, TextureAspect,
+    Device, Extent3d, Features, TexelCopyTextureInfo, TexelCopyBufferLayout, Origin3d, ShaderStages, Texture, TextureAspect,
     TextureDescriptor, TextureDimension, TextureSampleType, TextureView, TextureViewDescriptor, TextureViewDimension,
 };
 
@@ -157,14 +157,14 @@ impl<T: 'static> TextureManager<T> {
                 let scope = AllocationErrorScope::new(&renderer.device);
                 // write first level
                 renderer.queue.write_texture(
-                    ImageCopyTexture {
+                    TexelCopyTextureInfo {
                         texture: &tex,
                         mip_level: 0,
                         origin: Origin3d::ZERO,
                         aspect: TextureAspect::All,
                     },
                     &texture.data,
-                    ImageDataLayout {
+                    TexelCopyBufferLayout {
                         offset: 0,
                         bytes_per_row: Some(block_size * (size.width / block_width)),
                         rows_per_image: None,
@@ -222,13 +222,13 @@ impl<T: 'static> TextureManager<T> {
             profiling::scope!("mip level generation");
 
             encoder.copy_texture_to_texture(
-                ImageCopyTexture {
+                TexelCopyTextureInfo {
                     texture: old_texture,
                     mip_level: old_mip,
                     origin: Origin3d::ZERO,
                     aspect: TextureAspect::All,
                 },
-                ImageCopyTexture {
+                TexelCopyTextureInfo {
                     texture: &tex,
                     mip_level: new_mip,
                     origin: Origin3d::ZERO,

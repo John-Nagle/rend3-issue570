@@ -461,6 +461,7 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
                     return;
                 }
                 Err(SurfaceError::OutOfMemory | SurfaceError::Lost) => panic!("Surface OOM"),
+                Err(wgpu::SurfaceError::Other) => todo!(), // ***FIX** new case                
             };
             let current_time = web_time::Instant::now();
             let delta_t_seconds = (current_time - self.previous_time).as_secs_f32();
@@ -695,6 +696,7 @@ pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_att
                         return;
                     }
                     Err(SurfaceError::OutOfMemory | SurfaceError::Lost) => panic!("Surface OOM"),
+                    Err(wgpu::SurfaceError::Other) => todo!(), // ***FIX*** new case
                 };
 
                 let current_time = web_time::Instant::now();

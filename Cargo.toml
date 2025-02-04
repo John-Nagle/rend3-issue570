@@ -19,6 +19,7 @@ version = "0.24.2"
 wgpu = "^24.0.1"
 wgpu-types = "^24.0.0"
 wgpu-profiler = "^0.21.0"
+glam = "^0.29"
 
 [profile.ci]
 inherits = "dev"

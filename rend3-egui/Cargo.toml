@@ -12,10 +12,9 @@ categories = ["game-development", "graphics", "rendering", "rendering::engine", 
 rust-version = "1.71"
 
 [dependencies]
-egui = "0.30"
-###### egui-wgpu = "0.30"
-# ***TEMP*** patch because Github and crates.io are out of sync
-egui-wgpu = { git = "https://github.com/emilk/egui.git", version = "0.30"  }
+egui = "0.31"
+egui-wgpu = "0.31"
 rend3 = { path = "../rend3" }
 wgpu = { workspace = true }
 wgpu-types = { workspace = true }
+glam = { workspace = true }
