@@ -531,11 +531,11 @@ impl<T: 'static> ApplicationHandler<T> for Rend3ApplicationHandler<'_,T> {
         self.pass_through_event(event_loop, event);    // pass up to Rend3 level
     }
 }
-
+/*
 /// Old async start. This has the event loop.
 /// It's only really async on mobile.
 /// On other platforms it's blocked immediately on return.
-pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_attributes: WindowAttributes) {
+pub async fn async_start_old<A: App<T> + 'static, T: 'static>(mut app: A, window_attributes: WindowAttributes) {
     app.register_logger();
     app.register_panic_hook();
 
@@ -741,11 +741,12 @@ pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_att
         },
     );
 }
+*/
 
 /// New async start. This has the event loop.
 /// It's only really async on mobile.
 /// On other platforms it's blocked immediately on return.
-pub async fn async_start_new<A: App<T> + 'static, T: 'static>(mut app: A, window_attributes: WindowAttributes) {
+pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_attributes: WindowAttributes) {
     //  Setup phase
     let (mut application_handler, event_loop) = Rend3ApplicationHandler::new(&mut app, window_attributes);
     // Run the application
@@ -805,7 +806,6 @@ fn handle_surface<A: App<T>  + ?Sized, T: 'static>(
 }
 
 pub fn start<A: App<T> + 'static, T: 'static>(app: A, window_attributes: WindowAttributes) {
-    const USE_APP_FORM: bool = true; // ***TEMP*** testing new form
     #[cfg(target_arch = "wasm32")]
     {
         wasm_bindgen_futures::spawn_local(async_start(app, window_attributes));
@@ -813,10 +813,7 @@ pub fn start<A: App<T> + 'static, T: 'static>(app: A, window_attributes: WindowA
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        if USE_APP_FORM {
-            pollster::block_on(async_start_new(app, window_attributes));
-        } else {   
-            pollster::block_on(async_start_new(app, window_attributes));
-        }
+        
+        pollster::block_on(async_start(app, window_attributes));
     }
 }
