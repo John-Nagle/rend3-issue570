@@ -10,7 +10,7 @@ use std::collections::{HashSet};
 
 /// Set to true to check instructions for deletion before use.
 /// This is a debug trap.
-const CHECK_INSTRUCTIONS: bool = true; // didn't fail in 20 hour test without mesh check
+const CHECK_INSTRUCTIONS: bool = true; // didn't fail in 20 hour test with this enabled.
 
 /// Instruction checker. Checks for instructions which delete an object preceding instructions which use that object.
 /// This is a debug trap for a race condition.
@@ -21,9 +21,9 @@ fn check_instructions(renderer: &Renderer, instructions: &Vec<Instruction>) {
     fn check_mesh_in_add_object(
         deleted_mesh_handles: &HashSet<usize>,
         object: &Object,
-        mesh_manager: &MeshManager,
+        _mesh_manager: &MeshManager,
     ) {
-        let mesh_manager_guard = mesh_manager.lock_internal_data();    // performance problem
+        //////let mesh_manager_guard = mesh_manager.lock_internal_data();    // performance problem
         match &object.mesh_kind {
             ObjectMeshKind::Animated(_skeleton) => {} // no check, because bug is in static meshes
             ObjectMeshKind::Static(mesh_handle) => {
