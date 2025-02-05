@@ -40,6 +40,89 @@ pub struct SetupContext<'a, T: 'static = ()> {
     pub resolution: UVec2,
     pub scale_factor: f32,
 }
+/* ***NOTYET***
+impl <T: 'static> SetupContext<'_> {
+    /// Usual new. Sets up the windowing.
+    //  ***NOTYET***
+    fn new(app: &impl App<T>, window_attributes: WindowAttributes, event_loop: &ActiveEventLoop) -> Self {
+        // Create the window invisible until we are rendering
+        let (event_loop, window) = app.create_window(window_attributes.with_visible(false)).unwrap();
+        let window = Arc::new(window);
+        let window_size = window.inner_size();
+
+        //  This is silly, but, for some reason, create_iad is async.
+        let iad = async {
+            app.create_iad().await.unwrap()
+        }.block_on();
+
+        // The one line of unsafe needed. We just need to guarentee that the window
+        // outlives the use of the surface.
+        //
+        // Android has to defer the surface until `Resumed` is fired. This doesn't fire
+        // on other platforms though :|
+        let surface = if cfg!(target_os = "android") {
+            None
+        } else {
+            Some(Arc::new(iad.instance.create_surface(window.clone()).unwrap()))
+        };
+
+        // Make us a renderer.
+        let renderer =
+            rend3::Renderer::new(iad.clone(), app.get_handedness(), Some(window_size.width as f32 / window_size.height as f32))
+                .unwrap();
+
+        // Get the preferred format for the surface.
+        //
+        // Assume android supports Rgba8Srgb, as it has 100% device coverage
+        let format = surface.as_ref().map_or(TextureFormat::Rgba8UnormSrgb, |s| {
+            let caps = s.get_capabilities(&iad.adapter);
+            let format = caps.formats[0];
+
+            // Configure the surface to be ready for rendering.
+            rend3::configure_surface(
+                s,
+                &iad.device,
+                format,
+                glam::UVec2::new(window_size.width, window_size.height),
+                rend3::types::PresentMode::Fifo,
+            );
+
+            format
+        });
+
+        let mut spp = rend3::ShaderPreProcessor::new();
+        rend3_routine::builtin_shaders(&mut spp);
+
+        let base_rendergraph = app.create_base_rendergraph(&renderer, &spp);
+        let mut data_core = renderer.data_core.lock();
+        let routines = Arc::new(DefaultRoutines {
+            pbr: Mutex::new(rend3_routine::pbr::PbrRoutine::new(
+                &renderer,
+                &mut data_core,
+                &spp,
+                &base_rendergraph.interfaces,
+            )),
+            skybox: Mutex::new(rend3_routine::skybox::SkyboxRoutine::new(&renderer, &spp, &base_rendergraph.interfaces)),
+            tonemapping: Mutex::new(rend3_routine::tonemapping::TonemappingRoutine::new(
+                &renderer,
+                &spp,
+                &base_rendergraph.interfaces,
+                format,
+            )),
+        });
+        drop(data_core);
+
+        SetupContext {
+            windowing: Some(WindowingSetup { event_loop: &event_loop, window: &window }),
+            renderer: &renderer,
+            routines: &routines,
+            surface_format: format,
+            resolution: UVec2::new(window_size.width, window_size.height),
+            scale_factor: window.scale_factor() as f32,
+        }
+    }
+}
+*/
 
 /// Context passed to the event handler.
 pub struct EventContext<'a> {
