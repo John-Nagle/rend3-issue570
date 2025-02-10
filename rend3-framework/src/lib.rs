@@ -116,7 +116,7 @@ pub trait App<T: 'static = ()> {
         Box::pin(async move { rend3::create_iad(None, None, None, None).await })
     }
 
-    fn create_base_rendergraph(&mut self, renderer: &Arc<Renderer>, spp: &ShaderPreProcessor) -> BaseRenderGraph {
+    fn create_base_rendergraph(&mut self, renderer: &Arc<Renderer>, spp: &mut ShaderPreProcessor) -> BaseRenderGraph {
         BaseRenderGraph::new(renderer, spp)
     }
 
@@ -224,7 +224,7 @@ pub async fn async_start<A: App<T> + 'static, T: 'static>(mut app: A, window_att
     let mut spp = rend3::ShaderPreProcessor::new();
     rend3_routine::builtin_shaders(&mut spp);
 
-    let base_rendergraph = app.create_base_rendergraph(&renderer, &spp);
+    let base_rendergraph = app.create_base_rendergraph(&renderer, &mut spp);
     let mut data_core = renderer.data_core.lock();
     let routines = Arc::new(DefaultRoutines {
         pbr: Mutex::new(rend3_routine::pbr::PbrRoutine::new(
